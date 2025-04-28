@@ -1,5 +1,6 @@
 lighteval accelerate \
-	"pretrained=meta-llama/Llama-3.2-1B,dtype=bfloat16,model_parallel=True" \
-	"community|pile_10k|0|1" \
+	"pretrained=$1,dtype=bfloat16,model_parallel=True" \
+	./katbench.txt \
 	--custom-tasks katbench.py \
-	--override-batch-size 1
+	--override-batch-size 1 \
+	--output-dir output

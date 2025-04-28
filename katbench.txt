@@ -1,0 +1,22 @@
+# TinyStories
+community|tinystories|0|1
+# Pile
+community|pile:arxiv|0|1
+community|pile:bibliotik|0|1
+community|pile:commoncrawl|0|1
+community|pile:dm_mathematics|0|1
+community|pile:enron|0|1
+community|pile:europarl|0|1
+community|pile:freelaw|0|1
+community|pile:github|0|1
+community|pile:gutenberg|0|1
+community|pile:hackernews|0|1
+community|pile:nih_exporter|0|1
+community|pile:opensubtitles|0|1
+community|pile:openwebtext2|0|1
+community|pile:pubmed_abstracts|0|1
+community|pile:pubmed_central|0|1
+community|pile:stackexchange|0|1
+community|pile:uspto|0|1
+community|pile:wikipedia|0|1
+community|pile:youtubesubtitles|0|1
