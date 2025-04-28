@@ -1,16 +1,3 @@
-import numpy as np
-from aenum import extend_enum
-
-from lighteval.metrics.metrics import Metrics, SampleLevelMetric
-from lighteval.metrics.utils.metric_utils import MetricCategory, MetricUseCase
-from lighteval.tasks.default_prompts import LETTER_INDICES
-from lighteval.tasks.lighteval_task import LightevalTaskConfig
-from lighteval.tasks.requests import Doc
-
-def prompt_fn(line, task_name: str = None):
-    # must subset string to prevent OOM errors
-    return Doc(task_name=task_name, query=line["text"][:4096], gold_index=None, choices=None)
-
 language_datasets = {
     "tinystories": {
         "hf_repo": "roneneldan/TinyStories",
@@ -25,6 +12,19 @@ language_datasets = {
         "evaluation_splits": ["test"],
     },
 }
+
+import numpy as np
+from aenum import extend_enum
+
+from lighteval.metrics.metrics import Metrics, SampleLevelMetric
+from lighteval.metrics.utils.metric_utils import MetricCategory, MetricUseCase
+from lighteval.tasks.default_prompts import LETTER_INDICES
+from lighteval.tasks.lighteval_task import LightevalTaskConfig
+from lighteval.tasks.requests import Doc
+
+def prompt_fn(line, task_name: str = None):
+    # must subset string to prevent OOM errors
+    return Doc(task_name=task_name, query=line["text"][:4096], gold_index=None, choices=None)
 
 language_tasks = []
 
