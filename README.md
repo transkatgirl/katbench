@@ -1,2 +1,2 @@
 # katbench
-Kat's LLM Base Model Benchmark
+Kat's LLM Base Model Benchmark Suite
