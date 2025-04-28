@@ -64,3 +64,11 @@ for key, value in language_datasets.items():
             ))
 
 TASKS_TABLE = language_tasks
+
+import os
+if os.path.exists("katbench.txt"):
+    os.remove("katbench.txt")
+
+with open("katbench.txt", "w") as f:
+    for task in TASKS_TABLE:
+        f.write(task.suite[0] + "|" + task.name + "|0|1\n")

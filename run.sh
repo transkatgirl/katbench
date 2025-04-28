@@ -1,3 +1,4 @@
+lighteval tasks list --custom-tasks katbench.py > /dev/null
 lighteval accelerate \
 	"pretrained=$1,dtype=bfloat16,model_parallel=True" \
 	./katbench.txt \
