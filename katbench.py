@@ -157,7 +157,7 @@ language_datasets = {
     },
 }
 
-# TODO: Include datasets that require post processing (jkkummerfeld/irc_disentangle, Fal7acy/4chan-archive, lemonilia/Elliquiy-Role-Playing-Forums_2023-04)
+# TODO: Create mini versions of Fal7acy/4chan-archive, HuggingFaceGECLM/REDDIT_submissions, HuggingFaceGECLM/REDDIT_comments, lemonilia/Elliquiy-Role-Playing-Forums_2023-04, recursal/Fanatic-Fandom, jkkummerfeld/irc_disentangle
 
 import numpy as np
 from aenum import extend_enum
