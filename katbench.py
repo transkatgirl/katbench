@@ -135,6 +135,31 @@ language_datasets = {
         "hf_subsets": ["ada", "agda", "alloy", "antlr", "applescript", "assembly", "augeas", "awk", "batchfile", "bison", "bluespec", "c", "c++", "c-sharp", "clojure", "cmake", "coffeescript", "common-lisp", "css", "cuda", "dart", "dockerfile", "elixir", "elm", "emacs-lisp","erlang", "f-sharp", "fortran", "glsl", "go", "groovy", "haskell","html", "idris", "isabelle", "java", "java-server-pages", "javascript", "julia", "kotlin", "lean", "literate-agda", "literate-coffeescript", "literate-haskell", "lua", "makefile", "maple", "markdown", "mathematica", "matlab", "ocaml", "pascal", "perl", "php", "powershell", "prolog", "protocol-buffer", "python", "r", "racket", "restructuredtext", "rmarkdown", "ruby", "rust", "sas", "scala", "scheme", "shell", "smalltalk", "solidity", "sparql", "sql", "stan", "standard-ml", "stata", "systemverilog", "tcl", "tcsh", "tex", "thrift", "typescript", "verilog", "vhdl", "visual-basic", "xslt", "yacc", "zig"],
         "evaluation_splits": ["train"],
     },
+    "reddit-posts:changemyview": {
+        "hf_repo": "agentlans/reddit-logic",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
+    "reddit-posts:aita": {
+        "hf_repo": "agentlans/reddit-ethics",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
+    "reddit-posts:popular-mix": {
+        "hf_repo": "smwilliams/reddit_large_posts",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
+    "reddit-posts:horror-mix": {
+        "hf_repo": "intone/horror_stories_reddit",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
+    "reddit-posts:nsfw": {
+        "hf_repo": "acheong08/nsfw_reddit",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
     "erotic-books": {
         "hf_repo": "AlekseyKorshuk/erotic-books",
         "hf_subsets": [],
@@ -159,10 +184,16 @@ from lighteval.tasks.lighteval_task import LightevalTaskConfig
 from lighteval.tasks.requests import Doc
 
 def prompt_fn(line, task_name: str = None):
-    if "text" in line:
+    if "title" in line and "text" in line:
+        return Doc(task_name=task_name, query=(line["title"]+"\n\n"+line["text"])[:context_length], gold_index=None, choices=None)
+    elif "text" in line:
         return Doc(task_name=task_name, query=line["text"][:context_length], gold_index=None, choices=None)
     elif "content" in line:
         return Doc(task_name=task_name, query=line["content"][:context_length], gold_index=None, choices=None)
+    elif "input" in line and "output" in line:
+        return Doc(task_name=task_name, query=(line["input"]+"\n---\n\n"+line["output"])[:context_length], gold_index=None, choices=None)
+    elif "instruction" in line and "output" in line and not "input" in line:
+        return Doc(task_name=task_name, query=(line["instruction"]+"\n\n"+line["output"])[:context_length], gold_index=None, choices=None)
 
 language_tasks = []
 
