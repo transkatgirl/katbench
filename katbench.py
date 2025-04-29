@@ -168,7 +168,7 @@ for key, value in language_datasets.items():
             few_shots_select=None,
             generation_size=-1,
             stop_sequence=["\n"],
-            metric=[Metrics.word_perplexity, Metrics.bits_per_byte],
+            metric=[Metrics.word_perplexity, Metrics.byte_perplexity, Metrics.bits_per_byte],
             trust_dataset=True
         ))
     if len(value["hf_subsets"]) == 0:
@@ -184,7 +184,7 @@ for key, value in language_datasets.items():
             few_shots_select=None,
             generation_size=-1,
             stop_sequence=["\n"],
-            metric=[Metrics.word_perplexity, Metrics.bits_per_byte],
+            metric=[Metrics.word_perplexity, Metrics.byte_perplexity, Metrics.bits_per_byte],
             trust_dataset=True
         ))
 
