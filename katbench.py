@@ -5,6 +5,21 @@ language_datasets = {
         "hf_subsets": ["arxiv", "bibliotik", "commoncrawl", "dm-mathematics", "enron", "europarl", "freelaw", "github", "gutenberg", "hackernews", "nih-exporter", "opensubtitles", "openwebtext2", "pubmed-abstracts", "pubmed-central", "stackexchange", "uspto", "wikipedia", "youtubesubtitles"],
         "evaluation_splits": ["test"],
     },
+    "pile:ubuntu-irc": {
+        "hf_repo": "timaeus/pile-ubuntu_irc-broken",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
+    "pile:philpapers": {
+        "hf_repo": "timaeus/pile-philpapers",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
+    "twitteraae": {
+        "hf_repo": "lighteval/TwitterAAE",
+        "hf_subsets": ["aa", "white"],
+        "evaluation_splits": ["test"],
+    },
     "culturax:eng": {
         "hf_repo": "yiyic/culturaX_eng",
         "hf_subsets": [],
