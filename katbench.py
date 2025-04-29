@@ -10,11 +10,6 @@ language_datasets = {
         "hf_subsets": [],
         "evaluation_splits": ["train"],
     },
-    "pile:philpapers": {
-        "hf_repo": "timaeus/pile-philpapers",
-        "hf_subsets": [],
-        "evaluation_splits": ["train"],
-    },
     "twitteraae": {
         "hf_repo": "lighteval/TwitterAAE",
         "hf_subsets": ["aa", "white"],
