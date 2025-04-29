@@ -10,6 +10,11 @@ language_datasets = {
         "hf_subsets": [],
         "evaluation_splits": ["train"],
     },
+    "fineweb:bbc": {
+        "hf_repo": "permutans/fineweb-bbc-news",
+        "hf_subsets": ["sample-10BT"],
+        "evaluation_splits": ["train"],
+    },
     "twitteraae": {
         "hf_repo": "lighteval/TwitterAAE",
         "hf_subsets": ["aa", "white"],
@@ -157,7 +162,7 @@ language_datasets = {
     },
 }
 
-# TODO: Create mini versions of Fal7acy/4chan-archive, HuggingFaceGECLM/REDDIT_submissions, HuggingFaceGECLM/REDDIT_comments, lemonilia/Elliquiy-Role-Playing-Forums_2023-04, recursal/Fanatic-Fandom, jkkummerfeld/irc_disentangle, enryu43/twitter100m_tweets
+# TODO: Create mini versions of Fal7acy/4chan-archive, HuggingFaceGECLM/REDDIT_submissions, HuggingFaceGECLM/REDDIT_comments, lemonilia/Elliquiy-Role-Playing-Forums_2023-04, recursal/Fanatic-Fandom, jkkummerfeld/irc_disentangle, enryu43/twitter100m_tweets, lighteval/TwitterAAE
 
 import numpy as np
 from aenum import extend_enum
@@ -193,13 +198,13 @@ def prompt_fn(line, task_name: str = None):
 language_tasks = []
 
 for key, value in language_datasets.items():
-    for subset in value["hf_subsets"]:
+    if len(value["hf_subsets"]) == 1:
         language_tasks.append(LightevalTaskConfig(
-            name=key+":"+subset,
+            name=key,
             suite=["community"],
             prompt_function=prompt_fn,
             hf_repo=value["hf_repo"],
-            hf_subset=subset,
+            hf_subset=value["hf_subsets"][0],
             hf_avail_splits=value["evaluation_splits"],
             evaluation_splits=value["evaluation_splits"],
             few_shots_split="",
@@ -209,6 +214,23 @@ for key, value in language_datasets.items():
             metric=[Metrics.word_perplexity, Metrics.byte_perplexity, Metrics.bits_per_byte],
             trust_dataset=True
         ))
+    else:
+        for subset in value["hf_subsets"]:
+            language_tasks.append(LightevalTaskConfig(
+                name=key+":"+subset,
+                suite=["community"],
+                prompt_function=prompt_fn,
+                hf_repo=value["hf_repo"],
+                hf_subset=subset,
+                hf_avail_splits=value["evaluation_splits"],
+                evaluation_splits=value["evaluation_splits"],
+                few_shots_split="",
+                few_shots_select=None,
+                generation_size=-1,
+                stop_sequence=["\n"],
+                metric=[Metrics.word_perplexity, Metrics.byte_perplexity, Metrics.bits_per_byte],
+                trust_dataset=True
+            ))
     if len(value["hf_subsets"]) == 0:
         language_tasks.append(LightevalTaskConfig(
             name=key,
