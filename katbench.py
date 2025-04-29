@@ -5,7 +5,7 @@ language_datasets = {
         "hf_subsets": ["arxiv", "bibliotik", "commoncrawl", "dm-mathematics", "enron", "europarl", "freelaw", "github", "gutenberg", "hackernews", "nih-exporter", "opensubtitles", "openwebtext2", "pubmed-abstracts", "pubmed-central", "stackexchange", "uspto", "wikipedia", "youtubesubtitles"],
         "evaluation_splits": ["test"],
     },
-    "pile:ubuntu-irc": {
+    "pile:ubuntu-irc-broken": {
         "hf_repo": "timaeus/pile-ubuntu_irc-broken",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
