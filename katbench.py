@@ -175,6 +175,8 @@ def prompt_fn(line, task_name: str = None):
         return Doc(task_name=task_name, query=line["text"][:context_length], gold_index=None, choices=None)
     elif "content" in line and line["content"]:
         return Doc(task_name=task_name, query=line["content"][:context_length], gold_index=None, choices=None)
+    elif "tweet" in line and line["tweet"]:
+        return Doc(task_name=task_name, query=line["tweet"][:context_length], gold_index=None, choices=None)
     elif "input" in line and line["input"] and "output" in line and line["output"]:
         return Doc(task_name=task_name, query=(line["input"]+"\n---\n\n"+line["output"])[:context_length], gold_index=None, choices=None)
     elif "instruction" in line and line["instruction"] and "output" in line and line["output"] and not "input" in line:
