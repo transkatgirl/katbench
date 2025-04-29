@@ -162,7 +162,7 @@ language_datasets = {
     },
 }
 
-# TODO: Create mini (~10k rows) versions of Fal7acy/4chan-archive, HuggingFaceGECLM/REDDIT_submissions, HuggingFaceGECLM/REDDIT_comments, lemonilia/Elliquiy-Role-Playing-Forums_2023-04, recursal/Fanatic-Fandom, jkkummerfeld/irc_disentangle, enryu43/twitter100m_tweets, lighteval/TwitterAAE, Helsinki-NLP/open_subtitles, ontocord/CulturaY, EleutherAI/wikitext_document_level, milistu/AMAZON-Products-2023, vincha77/filtered_yelp_restaurant_reviews, breadlicker45/discord_data
+# TODO: Create mini (~10k rows) versions of Fal7acy/4chan-archive, HuggingFaceGECLM/REDDIT_submissions, HuggingFaceGECLM/REDDIT_comments, lemonilia/Elliquiy-Role-Playing-Forums_2023-04, recursal/Fanatic-Fandom, jkkummerfeld/irc_disentangle, enryu43/twitter100m_tweets, lighteval/TwitterAAE, Helsinki-NLP/open_subtitles, ontocord/CulturaY, EleutherAI/wikitext_document_level, milistu/AMAZON-Products-2023, vincha77/filtered_yelp_restaurant_reviews, breadlicker45/discord_data, lmsys/lmsys-chat-1m
 
 import numpy as np
 from aenum import extend_enum
