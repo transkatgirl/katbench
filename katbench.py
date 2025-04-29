@@ -140,11 +140,6 @@ language_datasets = {
         "hf_subsets": [],
         "evaluation_splits": ["train"],
     },
-    "reddit-posts:horror-mix": {
-        "hf_repo": "intone/horror_stories_reddit",
-        "hf_subsets": [],
-        "evaluation_splits": ["train"],
-    },
     "reddit-posts:nsfw-stories": {
         "hf_repo": "acheong08/nsfw_reddit",
         "hf_subsets": [],
@@ -174,16 +169,24 @@ from lighteval.tasks.lighteval_task import LightevalTaskConfig
 from lighteval.tasks.requests import Doc
 
 def prompt_fn(line, task_name: str = None):
-    if "title" in line and "text" in line:
+    if "title" in line and line["title"] and "text" in line and line["text"]:
         return Doc(task_name=task_name, query=(line["title"]+"\n\n"+line["text"])[:context_length], gold_index=None, choices=None)
-    elif "text" in line:
+    elif "text" in line and line["text"]:
         return Doc(task_name=task_name, query=line["text"][:context_length], gold_index=None, choices=None)
-    elif "content" in line:
+    elif "content" in line and line["content"]:
         return Doc(task_name=task_name, query=line["content"][:context_length], gold_index=None, choices=None)
-    elif "input" in line and "output" in line:
+    elif "input" in line and line["input"] and "output" in line and line["output"]:
         return Doc(task_name=task_name, query=(line["input"]+"\n---\n\n"+line["output"])[:context_length], gold_index=None, choices=None)
-    elif "instruction" in line and "output" in line and not "input" in line:
+    elif "instruction" in line and line["instruction"] and "output" in line and line["output"] and not "input" in line:
         return Doc(task_name=task_name, query=(line["instruction"]+"\n\n"+line["output"])[:context_length], gold_index=None, choices=None)
+    elif "title" in line and line["title"] and "story" in line and line["story"]:
+        return Doc(task_name=task_name, query=(line["title"]+"\n\n"+line["story"])[:context_length], gold_index=None, choices=None)
+    elif "story" in line and line["story"]:
+        return Doc(task_name=task_name, query=line["story"][:context_length], gold_index=None, choices=None)
+    else:
+        print("Warning: dropping line from " + task_name)
+        print(line)
+        return None
 
 language_tasks = []
 
