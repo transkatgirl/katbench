@@ -130,6 +130,11 @@ language_datasets = {
         "hf_subsets": [],
         "evaluation_splits": ["train"],
     },
+    "1k_stories": {
+        "hf_repo": "FareedKhan/1k_stories_100_genre",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
 }
 
 import numpy as np
