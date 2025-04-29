@@ -125,6 +125,11 @@ language_datasets = {
         "hf_subsets": ["ada", "agda", "alloy", "antlr", "applescript", "assembly", "augeas", "awk", "batchfile", "bison", "bluespec", "c", "c++", "c-sharp", "clojure", "cmake", "coffeescript", "common-lisp", "css", "cuda", "dart", "dockerfile", "elixir", "elm", "emacs-lisp","erlang", "f-sharp", "fortran", "glsl", "go", "groovy", "haskell","html", "idris", "isabelle", "java", "java-server-pages", "javascript", "julia", "kotlin", "lean", "literate-agda", "literate-coffeescript", "literate-haskell", "lua", "makefile", "maple", "markdown", "mathematica", "matlab", "ocaml", "pascal", "perl", "php", "powershell", "prolog", "protocol-buffer", "python", "r", "racket", "restructuredtext", "rmarkdown", "ruby", "rust", "sas", "scala", "scheme", "shell", "smalltalk", "solidity", "sparql", "sql", "stan", "standard-ml", "stata", "systemverilog", "tcl", "tcsh", "tex", "thrift", "typescript", "verilog", "vhdl", "visual-basic", "xslt", "yacc", "zig"],
         "evaluation_splits": ["train"],
     },
+    "erotic-books": {
+        "hf_repo": "AlekseyKorshuk/erotic-books",
+        "hf_subsets": [],
+        "evaluation_splits": ["train"],
+    },
 }
 
 import numpy as np
