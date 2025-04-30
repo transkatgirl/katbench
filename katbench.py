@@ -5,21 +5,11 @@ language_datasets = {
         "hf_subsets": ["arxiv", "bibliotik", "commoncrawl", "dm-mathematics", "enron", "europarl", "freelaw", "github", "gutenberg", "hackernews", "nih-exporter", "opensubtitles", "openwebtext2", "pubmed-abstracts", "pubmed-central", "stackexchange", "uspto", "wikipedia", "youtubesubtitles"],
         "evaluation_splits": ["test"],
     },
-    "pile:ubuntu-irc-broken": {
-        "hf_repo": "timaeus/pile-ubuntu_irc-broken",
-        "hf_subsets": [],
-        "evaluation_splits": ["train"],
+    "paloma": {
+        "hf_repo": "allenai/paloma",
+        "hf_subsets": ["4chan_meta_sep", "c4_100_domains", "c4_en", "dolma-v1_5", "dolma_100_programing_languages", "dolma_100_subreddits", "falcon-refinedweb", "gab", "m2d2_s2orc_unsplit", "m2d2_wikipedia_unsplit", "manosphere_meta_sep", "mc4", "ptb", "redpajama", "twitterAAE_HELM_fixed", "wikitext_103"],
+        "evaluation_splits": ["val", "test"],
     },
-    "fineweb:bbc": {
-        "hf_repo": "permutans/fineweb-bbc-news",
-        "hf_subsets": ["sample-10BT"],
-        "evaluation_splits": ["train"],
-    },
-#    "twitteraae": {
-#        "hf_repo": "lighteval/TwitterAAE",
-#        "hf_subsets": ["aa", "white"],
-#        "evaluation_splits": ["test"],
-#    },
 #    "culturax:eng": {
 #        "hf_repo": "yiyic/culturaX_eng",
 #        "hf_subsets": [],
@@ -140,12 +130,7 @@ language_datasets = {
 #        "hf_subsets": ["ada", "agda", "alloy", "antlr", "applescript", "assembly", "augeas", "awk", "batchfile", "bison", "bluespec", "c", "c++", "c-sharp", "clojure", "cmake", "coffeescript", "common-lisp", "css", #"cuda", "dart", "dockerfile", "elixir", "elm", "emacs-lisp","erlang", "f-sharp", "fortran", "glsl", "go", #"groovy", "haskell","html", "idris", "isabelle", "java", "java-server-pages", "javascript", "julia", #"kotlin", "lean", "literate-agda", "literate-coffeescript", "literate-haskell", "lua", "makefile", "maple", #"markdown", "mathematica", "matlab", "ocaml", "pascal", "perl", "php", "powershell", "prolog", #"protocol-buffer", "python", "r", "racket", "restructuredtext", "rmarkdown", "ruby", "rust", "sas", "scala", #"scheme", "shell", "smalltalk", "solidity", "sparql", "sql", "stan", "standard-ml", "stata", #"systemverilog", "tcl", "tcsh", "tex", "thrift", "typescript", "verilog", "vhdl", "visual-basic", "xslt", #"yacc", "zig"],
 #        "evaluation_splits": ["train"],
 #    },
-    "reddit-posts:popular-mix": {
-        "hf_repo": "smwilliams/reddit_large_posts",
-        "hf_subsets": [],
-        "evaluation_splits": ["train"],
-    },
-    "reddit-posts:nsfw-stories": {
+    "nsfw_reddit": {
         "hf_repo": "acheong08/nsfw_reddit",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
@@ -161,8 +146,6 @@ language_datasets = {
         "evaluation_splits": ["train"],
     },
 }
-
-# TODO: Create mini (~10k rows) versions of Fal7acy/4chan-archive, HuggingFaceGECLM/REDDIT_submissions, HuggingFaceGECLM/REDDIT_comments, lemonilia/Elliquiy-Role-Playing-Forums_2023-04, recursal/Fanatic-Fandom, jkkummerfeld/irc_disentangle, enryu43/twitter100m_tweets, lighteval/TwitterAAE, Helsinki-NLP/open_subtitles, ontocord/CulturaY, HuggingFaceFW/clean-wikipedia, milistu/AMAZON-Products-2023, vincha77/filtered_yelp_restaurant_reviews, breadlicker45/discord_data, lmsys/lmsys-chat-1m, open-web-math/open-web-math, mlfoundations/dclm-baseline-1.0-parquet, ArmelR/the-pile-splitted
 
 from lighteval.metrics.metrics import Metrics
 from lighteval.tasks.lighteval_task import LightevalTaskConfig
