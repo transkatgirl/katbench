@@ -7,7 +7,7 @@ you will need:
 
 - a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index)
 - lighteval w/ TGI and math support
-	- note: due to a [bug in lighteval](https://github.com/huggingface/lighteval/pull/502), you will need to install the transkatgirl/lighteval fork
+	- note: due to a [bug in lighteval](https://github.com/huggingface/lighteval/pull/502), you will need to install the [transkatgirl/lighteval](https://github.com/transkatgirl/lighteval) fork
 
 ## usage
 
