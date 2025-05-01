@@ -3,6 +3,9 @@ what i use to compare LLM base models
 
 this is a work in progress; i plan on adding a lot more to it over time.
 
+> [!WARNING]
+> THIS IS CURRENTLY BROKEN, and outputs nonsensical results. i plan on rewriting it soon.
+
 ## setup
 
 > [!IMPORTANT]
