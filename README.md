@@ -5,7 +5,7 @@ what i use to compare LLM base models
 
 you will need:
 
-- a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index)
+- a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index) run with the `--enable-prefill-logprobs` flag
 - [lighteval](https://huggingface.co/docs/lighteval/index) w/ TGI and math support
 	- note: due to a [bug in lighteval](https://github.com/huggingface/lighteval/pull/502), you will need to install the [transkatgirl/lighteval](https://github.com/transkatgirl/lighteval) fork
 
