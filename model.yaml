@@ -1,0 +1,4 @@
+model:
+    inference_server_address: "http://your-inference-server.example.com"
+    inference_server_auth: null
+    model_name: null
