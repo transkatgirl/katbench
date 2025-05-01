@@ -9,7 +9,7 @@ what i use to compare LLM base models
 you will need:
 
 - a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index) run with the `--enable-prefill-logprobs --payload-limit 100000000` flags
-	- note: consider setting `MAX_TOTAL_TOKENS` to keep context length constant between models
+	- note: consider setting the `MAX_TOTAL_TOKENS` environment variable to keep context length constant between models
 - [lighteval](https://huggingface.co/docs/lighteval/index) w/ `tgi,math` extras
 
 ## usage
