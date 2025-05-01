@@ -4,9 +4,9 @@ if ! [ -e "model.yaml" ] ; then
     inference_server_auth: null
     model_name: null" > model.yaml
 fi
-lighteval tasks list --custom-tasks katbench.py > /dev/null
+lighteval tasks list --custom-tasks custom-tasks.py > /dev/null
 HF_HOME=cache lighteval endpoint tgi \
 	model.yaml \
 	./tasks.txt \
-	--custom-tasks katbench.py \
+	--custom-tasks custom-tasks.py \
 	--output-dir output
