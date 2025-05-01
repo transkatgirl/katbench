@@ -1,3 +1,4 @@
 .DS_Store
 output
-katbench.txt
+tasks.txt
+cache

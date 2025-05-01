@@ -4,141 +4,169 @@ language_datasets = {
         "hf_repo": "lighteval/pile_helm",
         "hf_subsets": ["arxiv", "bibliotik", "commoncrawl", "dm-mathematics", "enron", "europarl", "freelaw", "github", "gutenberg", "hackernews", "nih-exporter", "opensubtitles", "openwebtext2", "pubmed-abstracts", "pubmed-central", "stackexchange", "uspto", "wikipedia", "youtubesubtitles"],
         "evaluation_splits": ["test"],
+        "version": 0,
     },
     "paloma": {
         "hf_repo": "allenai/paloma",
         "hf_subsets": ["4chan_meta_sep", "c4_100_domains", "c4_en", "dolma-v1_5", "dolma_100_programing_languages", "dolma_100_subreddits", "falcon-refinedweb", "gab", "m2d2_s2orc_unsplit", "m2d2_wikipedia_unsplit", "manosphere_meta_sep", "mc4", "ptb", "redpajama", "twitterAAE_HELM_fixed", "wikitext_103"],
         "evaluation_splits": ["val", "test"],
+        "version": 0,
     },
     "culturax:eng": {
         "hf_repo": "yiyic/culturaX_eng",
         "hf_subsets": [],
         "evaluation_splits": ["dev", "test"],
+        "version": 0,
     },
     "culturax:deu": {
         "hf_repo": "yiyic/culturaX_deu",
         "hf_subsets": [],
         "evaluation_splits": ["dev", "test"],
+        "version": 0,
     },
     "culturax:esp": {
         "hf_repo": "yiyic/culturaX_esp",
         "hf_subsets": [],
         "evaluation_splits": ["dev", "test"],
+        "version": 0,
     },
     "culturax:fra": {
         "hf_repo": "yiyic/culturaX_fra",
         "hf_subsets": [],
         "evaluation_splits": ["dev", "test"],
+        "version": 0,
     },
     "culturax:ja": {
         "hf_repo": "yiyic/CulturaX_ja_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:yi": {
         "hf_repo": "yiyic/CulturaX_yi_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:he": {
         "hf_repo": "yiyic/CulturaX_he_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:am": {
         "hf_repo": "yiyic/CulturaX_am_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:mt": {
         "hf_repo": "yiyic/CulturaX_mt_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:hi": {
         "hf_repo": "yiyic/CulturaX_hi_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:ur": {
         "hf_repo": "yiyic/CulturaX_ur_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:gu": {
         "hf_repo": "yiyic/CulturaX_gu_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:si": {
         "hf_repo": "yiyic/CulturaX_si_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:pa": {
         "hf_repo": "yiyic/CulturaX_pa_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:tr": {
         "hf_repo": "yiyic/CulturaX_tr_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:kk": {
         "hf_repo": "yiyic/CulturaX_kk_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:ko": {
         "hf_repo": "yiyic/CulturaX_ko_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:mn": {
         "hf_repo": "yiyic/CulturaX_mn_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:mhr": {
         "hf_repo": "yiyic/CulturaX_mhr_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:fi": {
         "hf_repo": "yiyic/CulturaX_fi_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:ar": {
         "hf_repo": "yiyic/CulturaX_ar_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:hu": {
         "hf_repo": "yiyic/CulturaX_hu_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "culturax:zh": {
         "hf_repo": "yiyic/CulturaX_zh_test",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "nsfw_reddit": {
         "hf_repo": "acheong08/nsfw_reddit",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "erotic-books": {
         "hf_repo": "AlekseyKorshuk/erotic-books",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
     "1k_stories": {
         "hf_repo": "FareedKhan/1k_stories_100_genre",
         "hf_subsets": [],
         "evaluation_splits": ["train"],
+        "version": 0,
     },
 }
 
@@ -185,7 +213,8 @@ for key, value in language_datasets.items():
             generation_size=-1,
             stop_sequence=["\n"],
             metric=[Metrics.word_perplexity, Metrics.byte_perplexity, Metrics.bits_per_byte],
-            trust_dataset=True
+            trust_dataset=True,
+            version=value["version"],
         ))
     else:
         for subset in value["hf_subsets"]:
@@ -202,7 +231,8 @@ for key, value in language_datasets.items():
                 generation_size=-1,
                 stop_sequence=["\n"],
                 metric=[Metrics.word_perplexity, Metrics.byte_perplexity, Metrics.bits_per_byte],
-                trust_dataset=True
+                trust_dataset=True,
+                version=value["version"],
             ))
     if len(value["hf_subsets"]) == 0:
         language_tasks.append(LightevalTaskConfig(
@@ -218,13 +248,14 @@ for key, value in language_datasets.items():
             generation_size=-1,
             stop_sequence=["\n"],
             metric=[Metrics.word_perplexity, Metrics.byte_perplexity, Metrics.bits_per_byte],
-            trust_dataset=True
+            trust_dataset=True,
+            version=value["version"],
         ))
 
 TASKS_TABLE = language_tasks
 
 import os
-if not os.path.exists("katbench.txt"):
-    with open("katbench.txt", "w") as f:
+if not os.path.exists("tasks.txt"):
+    with open("tasks.txt", "w") as f:
         for task in TASKS_TABLE:
             f.write(task.suite[0] + "|" + task.name + "|0|0\n")
