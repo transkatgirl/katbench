@@ -1,4 +1,3 @@
-max_document_bytes = 4096
 language_datasets = {
     "pile": {
         "hf_repo": "lighteval/pile_helm",
@@ -176,21 +175,21 @@ from lighteval.tasks.requests import Doc
 
 def prompt_fn(line, task_name: str = None):
     if "title" in line and line["title"] and "text" in line and line["text"]:
-        return Doc(task_name=task_name, query=(line["title"]+"\n\n"+line["text"])[:max_document_bytes], gold_index=None, choices=None)
+        return Doc(task_name=task_name, query=(line["title"]+"\n\n"+line["text"]), gold_index=None, choices=None)
     elif "text" in line and line["text"]:
-        return Doc(task_name=task_name, query=line["text"][:max_document_bytes], gold_index=None, choices=None)
+        return Doc(task_name=task_name, query=line["text"], gold_index=None, choices=None)
     elif "content" in line and line["content"]:
-        return Doc(task_name=task_name, query=line["content"][:max_document_bytes], gold_index=None, choices=None)
+        return Doc(task_name=task_name, query=line["content"], gold_index=None, choices=None)
     elif "tweet" in line and line["tweet"]:
-        return Doc(task_name=task_name, query=line["tweet"][:max_document_bytes], gold_index=None, choices=None)
+        return Doc(task_name=task_name, query=line["tweet"], gold_index=None, choices=None)
     elif "input" in line and line["input"] and "output" in line and line["output"]:
-        return Doc(task_name=task_name, query=(line["input"]+"\n---\n\n"+line["output"])[:max_document_bytes], gold_index=None, choices=None)
+        return Doc(task_name=task_name, query=(line["input"]+"\n---\n\n"+line["output"]), gold_index=None, choices=None)
     elif "instruction" in line and line["instruction"] and "output" in line and line["output"] and not "input" in line:
-        return Doc(task_name=task_name, query=(line["instruction"]+"\n\n"+line["output"])[:max_document_bytes], gold_index=None, choices=None)
+        return Doc(task_name=task_name, query=(line["instruction"]+"\n\n"+line["output"]), gold_index=None, choices=None)
     elif "title" in line and line["title"] and "story" in line and line["story"]:
-        return Doc(task_name=task_name, query=(line["title"]+"\n\n"+line["story"])[:max_document_bytes], gold_index=None, choices=None)
+        return Doc(task_name=task_name, query=(line["title"]+"\n\n"+line["story"]), gold_index=None, choices=None)
     elif "story" in line and line["story"]:
-        return Doc(task_name=task_name, query=line["story"][:max_document_bytes], gold_index=None, choices=None)
+        return Doc(task_name=task_name, query=line["story"], gold_index=None, choices=None)
     else:
         print("Warning: dropping line from " + task_name)
         print(line)
@@ -258,4 +257,4 @@ import os
 if not os.path.exists("tasks.txt"):
     with open("tasks.txt", "w") as f:
         for task in TASKS_TABLE:
-            f.write(task.suite[0] + "|" + task.name + "|0|0\n")
+            f.write(task.suite[0] + "|" + task.name + "|0|1\n")
