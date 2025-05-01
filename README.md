@@ -11,7 +11,6 @@ this is a work in progress; i plan on adding a lot more to it over time.
 you will need:
 
 - a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index) run with the `--enable-prefill-logprobs --payload-limit 100000000` flags
-	- setting the `MAX_TOTAL_TOKENS` environment variable on the server is recommended to improve consistency between models and prevent backpressure
 - [lighteval](https://huggingface.co/docs/lighteval/index) w/ `tgi,math` extras
 
 ## usage
