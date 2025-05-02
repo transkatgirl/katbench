@@ -93,7 +93,7 @@ for filename in args.bench_data:
 		for key, value in linedata.items():
 			if key == "start_task":
 				task = value
-				task_data[value] = {"total_tokens": 0, "total_bytes": 0}
+				task_data[value] = {"total_tokens": 0, "total_bytes": 0, "completed": False}
 			elif key == "completed_task":
 				task = value
 				task_data[value]["completed"] = True
@@ -112,8 +112,7 @@ for filename in args.bench_data:
 
 	if args.data_output_file:
 		with open(args.data_output_file, "x") as file:
-			#json.dump({"metadata": metadata, "tasks": tasks}, file, separators=(',', ':'))
-			json.dump({"metadata": metadata, "task_data": task_data, "tasks": tasks}, file, indent="\t")
+			json.dump({"metadata": metadata, "tasks": tasks}, file, separators=(',', ':'))
 
 	summary = {}
 
