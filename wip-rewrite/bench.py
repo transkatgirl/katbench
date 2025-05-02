@@ -92,10 +92,10 @@ async def main():
 			outputfile.write("\n")
 		outputfile.write(json.dumps({"completed_task": name, "monotonic_ns": time.perf_counter_ns() - start}, separators=(',', ':')))
 		outputfile.write("\n")
+		outputfile.flush()
+		os.fsync(outputfile)
 
-	print("flush_output_file", outputfilename)
-	outputfile.flush()
-	os.fsync(outputfile)
+	print("close_output_file", outputfilename)
 	outputfile.close()
 
 if __name__ == '__main__':
