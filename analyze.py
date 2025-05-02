@@ -17,5 +17,5 @@ for filename in args.bench_data:
 	file = open(filename)
 	for line in file:
 		linedata = json.loads(line)
-		print(linedata)
+		#print(linedata)
 	file.close()
