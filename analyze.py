@@ -17,7 +17,7 @@ parser.add_argument('--normalize_tokenizer', type=str)
 
 args = parser.parse_args()
 
-def calculate_metrics(token_logprobs, chunk_size):
+def calculate_metrics(token_logprobs):
 	text = ""
 	logprobs = []
 	for token in token_logprobs:
