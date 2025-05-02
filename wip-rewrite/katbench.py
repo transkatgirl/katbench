@@ -73,19 +73,16 @@ async def main():
 	info = await client.get_endpoint_info()
 	max_input = min(int(args.context_len or info["max_input_tokens"]), int(info["max_input_tokens"]))
 
-	print(info)
-
 	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}, separators=(',', ':')))
 	outputfile.write("\n")
 	outputfile.flush()
 
-	batch_size = int(info["max_concurrent_requests"]/4)
+	batch_size = int(info["max_client_batch_size"])
 	semaphore = asyncio.Semaphore(batch_size)
 
-	for name, dataset in tasks.items():
-		print("run_task", name, info["model_id"], "context_len="+str(max_input), "batch_size="+str(batch_size))
-
-		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item, max_input) for item in dataset]):
+	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size))
+	for name, dataset in tqdm.tqdm(tasks.items(), desc="run_tasks", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]"):
+		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item, max_input) for item in dataset], desc=name):
 			outputfile.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
 			outputfile.write("\n")
 
