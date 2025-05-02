@@ -73,27 +73,27 @@ async def main():
 	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size))
 
 	print("open_output_file", args.output_file)
-	outputfile = open(args.output_file, "x")
+	output_file = open(args.output_file, "x")
 
-	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}, separators=(',', ':')))
-	outputfile.write("\n")
-	outputfile.flush()
+	output_file.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}, separators=(',', ':')))
+	output_file.write("\n")
+	output_file.flush()
 
 	for name, dataset in tqdm.tqdm(tasks.items(), desc="run_tasks", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]"):
 		field = dataset["field"]
-		outputfile.write(json.dumps({"start_task": name, "wallclock": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
-		outputfile.write("\n")
+		output_file.write(json.dumps({"start_task": name, "wallclock": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
+		output_file.write("\n")
 		start = time.perf_counter_ns()
 		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item[field], max_input) for item in dataset["dataset"]], desc=name):
-			outputfile.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
-			outputfile.write("\n")
-		outputfile.write(json.dumps({"completed_task": name, "monotonic_ns": time.perf_counter_ns() - start}, separators=(',', ':')))
-		outputfile.write("\n")
-		outputfile.flush()
-		os.fsync(outputfile)
+			output_file.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
+			output_file.write("\n")
+		output_file.write(json.dumps({"completed_task": name, "monotonic_ns": time.perf_counter_ns() - start}, separators=(',', ':')))
+		output_file.write("\n")
+		output_file.flush()
+		os.fsync(output_file)
 
 	print("close_output_file", args.output_file)
-	outputfile.close()
+	output_file.close()
 
 if __name__ == '__main__':
 	asyncio.run(main())
