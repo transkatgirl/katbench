@@ -3,6 +3,8 @@ import json
 import argparse
 import asyncio
 import tqdm
+import time
+import datetime
 from datasets import load_dataset
 from huggingface_hub import AsyncInferenceClient
 
@@ -74,9 +76,11 @@ async def main():
 	info = await client.get_endpoint_info()
 	max_input = min(int(args.context_len or info["max_input_tokens"]), int(info["max_input_tokens"]))
 
-	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}, separators=(',', ':')))
+	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input, "start": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
 	outputfile.write("\n")
 	outputfile.flush()
+
+	start = time.perf_counter()
 
 	batch_size = int(info["max_client_batch_size"])
 	semaphore = asyncio.Semaphore(batch_size)
@@ -88,7 +92,12 @@ async def main():
 			outputfile.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
 			outputfile.write("\n")
 
+	outputfile.write(json.dumps({"since_start": time.perf_counter() - start}, separators=(',', ':')))
+	outputfile.write("\n")
+
 	print("flush_output_file", outputfilename)
+	outputfile.write(json.dumps({"finish": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
+	outputfile.write("\n")
 	outputfile.flush()
 	os.fsync(outputfile)
 	outputfile.close()
