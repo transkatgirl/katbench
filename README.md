@@ -22,7 +22,7 @@ note: if you plan on testing very long context lengths (>100k tokens), you will 
 
 ### collate.py
 
-combines incomplete runs saved by `bench.py` into one output file, removing unfinished tasks and trimming corrupted JSON
+combines multiple incomplete runs saved by `bench.py` into one output file, removing unfinished tasks and trimming corrupted JSON
 
 ```bash
 python collate.py [-h] [--output_file OUTPUT_FILE] input_files [input_files ...]
