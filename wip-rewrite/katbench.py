@@ -35,7 +35,17 @@ def hydrate_tasks(tasks):
 
 async def run_task(semaphore, client, input, truncate):
 	async with semaphore:
-		output = await client.text_generation(prompt=input["text"], stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
+		return await _run_task_loop(client, input["text"], truncate)
+
+async def _run_task_loop(client, prompt, truncate):
+	output = await client.text_generation(prompt=prompt, stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
+	characters = 0
+	for token in output.details.prefill[1:]:
+		characters += len(token.text)
+	if len(prompt) > characters:
+		split_output = await _run_task_loop(client, prompt[characters:], truncate)
+		return [*output.details.prefill, *split_output]
+	else:
 		return output.details.prefill
 
 async def main():
@@ -55,7 +65,7 @@ async def main():
 
 	print("get_endpoint_info", args.base_url)
 	info = await client.get_endpoint_info()
-	max_input = args.context_len or info["max_input_tokens"]
+	max_input = int(args.context_len or info["max_input_tokens"])
 
 	print(info)
 
@@ -71,13 +81,12 @@ async def main():
 
 		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item, max_input) for item in dataset]):
 			#task_results.append(await result)
-			outputfile.write(json.dumps(await result))
+			outputfile.write(json.dumps({name: await result}))
 			outputfile.write("\n")
 
 		#outputfile.write(json.dumps({name: task_results}))
 		#outputfile.write("\n")
 		outputfile.flush()
-
 
 if __name__ == '__main__':
 	asyncio.run(main())
