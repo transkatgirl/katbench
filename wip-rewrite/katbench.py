@@ -59,11 +59,9 @@ def convert_output_format(output):
 
 async def main():
 	taskfilename = args.task_file or "tasks.json"
-	outputfilename = args.output_file or "output.jsonl"
+	outputfilename = args.output_file or "output-" + str(round(time.time())) + ".jsonl"
 
 	print("open_output_file", outputfilename)
-	if os.path.exists(outputfilename):
-		os.remove(outputfilename)
 	outputfile = open(outputfilename, "x")
 
 	print("load_tasks", taskfilename)
@@ -88,11 +86,11 @@ async def main():
 		field = dataset["field"]
 		outputfile.write(json.dumps({"start_task": name, "wallclock": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
 		outputfile.write("\n")
-		start = time.perf_counter()
+		start = time.perf_counter_ns()
 		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item[field], max_input) for item in dataset["dataset"]], desc=name):
 			outputfile.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
 			outputfile.write("\n")
-		outputfile.write(json.dumps({"completed_task": name, "monotonic": time.perf_counter() - start}, separators=(',', ':')))
+		outputfile.write(json.dumps({"completed_task": name, "monotonic_ns": time.perf_counter_ns() - start}, separators=(',', ':')))
 		outputfile.write("\n")
 
 	print("flush_output_file", outputfilename)
