@@ -3,4 +3,5 @@ output
 tasks.txt
 cache
 model.yaml
+tasks-*.json
 output-*.jsonl
