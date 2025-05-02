@@ -21,21 +21,22 @@ def load_raw_tasks(filename):
 	with open(filename) as file:
 		data = json.load(file)
 		for key, value in data.items():
-			for subset in value["hf_subsets"]:
-				tasks[key+":"+subset] = {"repo": value["hf_repo"], "subset": subset, "split": value["evaluation_split"]}
-			if len(value["hf_subsets"]) == 0:
-				tasks[key] = {"repo": value["hf_repo"], "subset": "default", "split": value["evaluation_split"]}
+			field = value.get("field") or "text"
+			for subset in value["subsets"]:
+				tasks[key+":"+subset] = {"repo": value["hf_repo"], "subset": subset, "split": value["split"], "field": field}
+			if len(value["subsets"]) == 0:
+				tasks[key] = {"repo": value["hf_repo"], "subset": "default", "split": value["split"], "field": field}
 	return tasks
 
 def hydrate_tasks(tasks):
 	hydrated_tasks = {}
 	for key, value in tqdm.tqdm(tasks.items(), desc="load_datasets"):
-		hydrated_tasks[key] = load_dataset(value["repo"], value["subset"], split=value["split"])
+		hydrated_tasks[key] = {"dataset": load_dataset(value["repo"], value["subset"], split=value["split"]), "field": value["field"]}
 	return hydrated_tasks
 
-async def run_task(semaphore, client, input, truncate):
+async def run_task(semaphore, client, prompt, truncate):
 	async with semaphore:
-		return await _run_task_loop(client, input["text"], truncate)
+		return await _run_task_loop(client, prompt, truncate)
 
 async def _run_task_loop(client, prompt, truncate):
 	output = await client.text_generation(prompt=prompt, stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
@@ -82,7 +83,8 @@ async def main():
 
 	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size))
 	for name, dataset in tqdm.tqdm(tasks.items(), desc="run_tasks", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]"):
-		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item, max_input) for item in dataset], desc=name):
+		field = dataset["field"]
+		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item[field], max_input) for item in dataset["dataset"]], desc=name):
 			outputfile.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
 			outputfile.write("\n")
 

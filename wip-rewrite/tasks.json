@@ -1,7 +1,7 @@
 {
 	"pile": {
 		"hf_repo": "lighteval/pile_helm",
-		"hf_subsets": [
+		"subsets": [
 			"arxiv",
 			"bibliotik",
 			"commoncrawl",
@@ -22,11 +22,11 @@
 			"wikipedia",
 			"youtubesubtitles"
 		],
-		"evaluation_split": "test"
+		"split": "test"
 	},
 	"paloma": {
 		"hf_repo": "allenai/paloma",
-		"hf_subsets": [
+		"subsets": [
 			"4chan_meta_sep",
 			"c4_100_domains",
 			"c4_en",
@@ -44,136 +44,138 @@
 			"twitterAAE_HELM_fixed",
 			"wikitext_103"
 		],
-		"evaluation_split": "val+test"
+		"split": "val+test"
 	},
 	"culturax:eng": {
 		"hf_repo": "yiyic/culturaX_eng",
-		"hf_subsets": [],
-		"evaluation_split": "dev+test"
+		"subsets": [],
+		"split": "dev+test"
 	},
 	"culturax:deu": {
 		"hf_repo": "yiyic/culturaX_deu",
-		"hf_subsets": [],
-		"evaluation_split": "dev+test"
+		"subsets": [],
+		"split": "dev+test"
 	},
 	"culturax:esp": {
 		"hf_repo": "yiyic/culturaX_esp",
-		"hf_subsets": [],
-		"evaluation_split": "dev+test"
+		"subsets": [],
+		"split": "dev+test"
 	},
 	"culturax:fra": {
 		"hf_repo": "yiyic/culturaX_fra",
-		"hf_subsets": [],
-		"evaluation_split": "dev+test"
+		"subsets": [],
+		"split": "dev+test"
 	},
 	"culturax:ja": {
 		"hf_repo": "yiyic/CulturaX_ja_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:yi": {
 		"hf_repo": "yiyic/CulturaX_yi_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:he": {
 		"hf_repo": "yiyic/CulturaX_he_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:am": {
 		"hf_repo": "yiyic/CulturaX_am_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:mt": {
 		"hf_repo": "yiyic/CulturaX_mt_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:hi": {
 		"hf_repo": "yiyic/CulturaX_hi_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:ur": {
 		"hf_repo": "yiyic/CulturaX_ur_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:gu": {
 		"hf_repo": "yiyic/CulturaX_gu_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:si": {
 		"hf_repo": "yiyic/CulturaX_si_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:pa": {
 		"hf_repo": "yiyic/CulturaX_pa_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:tr": {
 		"hf_repo": "yiyic/CulturaX_tr_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:kk": {
 		"hf_repo": "yiyic/CulturaX_kk_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:ko": {
 		"hf_repo": "yiyic/CulturaX_ko_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:mn": {
 		"hf_repo": "yiyic/CulturaX_mn_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:mhr": {
 		"hf_repo": "yiyic/CulturaX_mhr_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:fi": {
 		"hf_repo": "yiyic/CulturaX_fi_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:ar": {
 		"hf_repo": "yiyic/CulturaX_ar_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:hu": {
 		"hf_repo": "yiyic/CulturaX_hu_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"culturax:zh": {
 		"hf_repo": "yiyic/CulturaX_zh_test",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"nsfw_reddit": {
 		"hf_repo": "acheong08/nsfw_reddit",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train",
+		"field": "output"
 	},
 	"erotic-books": {
 		"hf_repo": "AlekseyKorshuk/erotic-books",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train"
 	},
 	"1k_stories": {
 		"hf_repo": "FareedKhan/1k_stories_100_genre",
-		"hf_subsets": [],
-		"evaluation_split": "train"
+		"subsets": [],
+		"split": "train",
+		"field": "story"
 	}
 }
