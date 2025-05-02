@@ -12,12 +12,12 @@ you will need:
 
 ### bench.py
 
-performs dataset logprob calculation using remote server
+performs dataset logprob calculation using remote LLM server, saving logprobs to disk
 
 ```bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN] base_url```
 
 ### analyze.py
 
-analyzes outputs from `bench.py` and calculates metrics
+analyzes logprobs from `bench.py` and calculates metrics
 
 TODO
