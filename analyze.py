@@ -12,11 +12,12 @@ from tokenizers import Tokenizer
 parser = argparse.ArgumentParser()
 parser.add_argument('bench_data', nargs="+", type=str)
 parser.add_argument('--data_output_file', type=str)
-parser.add_argument('--tokenizer', type=str)
+parser.add_argument('--stats_output_file', type=str)
+parser.add_argument('--tokenizer', type=str, default="allenai/OLMo-2-0425-1B")
 
 args = parser.parse_args()
 
-tokenizer = Tokenizer.from_pretrained(args.tokenizer or "allenai/OLMo-2-0425-1B")
+tokenizer = Tokenizer.from_pretrained(args.tokenizer)
 
 nltk.download('punkt_tab')
 

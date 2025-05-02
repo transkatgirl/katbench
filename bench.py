@@ -12,8 +12,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('base_url', type=str)
 parser.add_argument('--api_key', type=str)
 parser.add_argument('--model', type=str)
-parser.add_argument('--task_file', type=str)
-parser.add_argument('--output_file', type=str)
+parser.add_argument('--task_file', type=str, default="tasks.json")
+parser.add_argument('--output_file', type=str, default="output-" + str(round(time.time())) + ".jsonl")
 parser.add_argument('--context_len', type=int)
 
 args = parser.parse_args()
@@ -58,11 +58,8 @@ def convert_output_format(output):
 	return tokens
 
 async def main():
-	taskfilename = args.task_file or "tasks.json"
-	outputfilename = args.output_file or "output-" + str(round(time.time())) + ".jsonl"
-
-	print("load_tasks", taskfilename)
-	raw_tasks = load_raw_tasks(taskfilename)
+	print("load_tasks", args.task_file)
+	raw_tasks = load_raw_tasks(args.task_file)
 	tasks = hydrate_tasks(raw_tasks)
 
 	client = AsyncInferenceClient(base_url=args.base_url, api_key=args.api_key, model=args.model)
@@ -75,8 +72,8 @@ async def main():
 	semaphore = asyncio.Semaphore(batch_size)
 	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size))
 
-	print("open_output_file", outputfilename)
-	outputfile = open(outputfilename, "x")
+	print("open_output_file", args.output_file)
+	outputfile = open(args.output_file, "x")
 
 	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}, separators=(',', ':')))
 	outputfile.write("\n")
@@ -95,7 +92,7 @@ async def main():
 		outputfile.flush()
 		os.fsync(outputfile)
 
-	print("close_output_file", outputfilename)
+	print("close_output_file", args.output_file)
 	outputfile.close()
 
 if __name__ == '__main__':
