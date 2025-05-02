@@ -14,11 +14,17 @@ you will need:
 
 performs dataset tokenization & logprob calculation using remote LLM server, saving results to disk
 
-```bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN] base_url```
+```bash
+python bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN] base_url
+```
 
 ### collate.py
 
 combines incomplete runs saved by `bench.py` into one output file, removing unfinished tasks and corrupted JSON.
+
+```bash
+python collate.py [-h] [--output_file OUTPUT_FILE] input_files [input_files ...]
+```
 
 ### analyze.py
 
