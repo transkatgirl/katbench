@@ -38,11 +38,11 @@ def calculate_metrics(token_logprobs):
 		"byte_count": byte_count,
 		"word_count": word_count,
 		"token_count": token_count,
-		"word_perplexity": math.exp(-logprob_sum / word_count),
-		"byte_perplexity": math.exp(-logprob_sum / byte_count),
-		"token_perplexity": math.exp(-logprob_sum / token_count),
-		"normalized_token_perplexity": math.exp(-logprob_sum / len(tokenizer.encode(text))),
-		"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
+		"word_perplexity": math.exp(-logprob_sum / max(word_count, 1)),
+		"byte_perplexity": math.exp(-logprob_sum / max(byte_count, 1)),
+		"token_perplexity": math.exp(-logprob_sum / max(token_count, 1)),
+		"normalized_token_perplexity": math.exp(-logprob_sum / max(len(tokenizer.encode(text)), 1)),
+		"bits_per_byte": -logprob_sum / max(byte_count, 1) * 1 / math.log(2),
 	}
 
 def calculate_task_metrics(items):
@@ -113,7 +113,7 @@ for filename in args.bench_data:
 
 	if args.data_output_file:
 		with open(args.data_output_file, "x") as file:
-			json.dump({"metadata": metadata, "tasks": tasks}, file, separators=(',', ':'))
+			json.dump({"metadata": metadata, "task_data": task_data, "tasks": tasks}, file, separators=(',', ':'))
 
 	summary = {}
 
