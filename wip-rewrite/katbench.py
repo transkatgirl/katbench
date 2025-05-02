@@ -61,9 +61,6 @@ async def main():
 	taskfilename = args.task_file or "tasks.json"
 	outputfilename = args.output_file or "output-" + str(round(time.time())) + ".jsonl"
 
-	print("open_output_file", outputfilename)
-	outputfile = open(outputfilename, "x")
-
 	print("load_tasks", taskfilename)
 	raw_tasks = load_raw_tasks(taskfilename)
 	tasks = hydrate_tasks(raw_tasks)
@@ -73,15 +70,18 @@ async def main():
 	print("get_endpoint_info", args.base_url)
 	info = await client.get_endpoint_info()
 	max_input = min(int(args.context_len or info["max_input_tokens"]), int(info["max_input_tokens"]))
+	batch_size = int(info["max_client_batch_size"])
+
+	semaphore = asyncio.Semaphore(batch_size)
+	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size))
+
+	print("open_output_file", outputfilename)
+	outputfile = open(outputfilename, "x")
 
 	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}, separators=(',', ':')))
 	outputfile.write("\n")
 	outputfile.flush()
 
-	batch_size = int(info["max_client_batch_size"])
-	semaphore = asyncio.Semaphore(batch_size)
-
-	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size))
 	for name, dataset in tqdm.tqdm(tasks.items(), desc="run_tasks", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]"):
 		field = dataset["field"]
 		outputfile.write(json.dumps({"start_task": name, "wallclock": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
