@@ -30,7 +30,7 @@ def load_raw_tasks(filename):
 def hydrate_tasks(tasks):
 	hydrated_tasks = {}
 	for key, value in tqdm.tqdm(tasks.items(), desc="load_datasets"):
-		hydrated_tasks[key] = load_dataset(value["repo"], value["subset"], split=value["split"], num_proc=8)
+		hydrated_tasks[key] = load_dataset(value["repo"], value["subset"], split=value["split"])
 	return hydrated_tasks
 
 async def run_task(semaphore, client, input, truncate):
@@ -71,18 +71,19 @@ async def main():
 
 	print("get_endpoint_info", args.base_url)
 	info = await client.get_endpoint_info()
-	max_input = int(args.context_len or info["max_input_tokens"])
+	max_input = min(int(args.context_len or info["max_input_tokens"]), int(info["max_input_tokens"]))
 
 	print(info)
 
-	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}))
+	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}, separators=(',', ':')))
 	outputfile.write("\n")
 	outputfile.flush()
 
-	semaphore = asyncio.Semaphore(info["max_concurrent_requests"]/4)
+	batch_size = int(info["max_concurrent_requests"]/4)
+	semaphore = asyncio.Semaphore(batch_size)
 
 	for name, dataset in tasks.items():
-		print("run_task", name, info["model_id"], "context_len="+str(max_input))
+		print("run_task", name, info["model_id"], "context_len="+str(max_input), "batch_size="+str(batch_size))
 
 		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item, max_input) for item in dataset]):
 			outputfile.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
