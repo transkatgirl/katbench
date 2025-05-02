@@ -16,6 +16,10 @@ performs dataset tokenization & logprob calculation using remote LLM server, sav
 
 ```bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN] base_url```
 
+### collate.py
+
+combines incomplete runs saved by `bench.py` into one output file, removing unfinished tasks and corrupted JSON.
+
 ### analyze.py
 
 analyzes data saved to disk by `bench.py` and calculates metrics

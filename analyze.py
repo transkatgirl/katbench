@@ -9,6 +9,20 @@ import nltk
 import numpy
 from tokenizers import Tokenizer
 
+# TODO: rewrite this to provide one input file and many output files
+
+# measurements to include in rewrite:
+# - perplexity / bits per byte by input length
+# - perplexity / bits per byte by task
+# - tokens/bytes per second by input length
+# - tokens/bytes per second by task
+# - bytes/token by task
+# - words/token by task
+
+# create graphical plots, don't just output a handful of measurements
+# - make data distributions visible
+# - make statistical significance visible
+
 parser = argparse.ArgumentParser()
 parser.add_argument('bench_data', nargs="+", type=str)
 parser.add_argument('--data_output_file', type=str)
@@ -58,6 +72,7 @@ def calculate_task_metrics(items):
 
 	for key, value in task_items.items():
 		quartiles = numpy.percentile(value, [1, 5, 10, 25, 50, 75, 90, 95, 99])
+		histogram = numpy.histogram(value)
 
 		metrics[key] = {
 			"n": len(items),
