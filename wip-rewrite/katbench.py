@@ -76,7 +76,7 @@ async def main():
 	info = await client.get_endpoint_info()
 	max_input = min(int(args.context_len or info["max_input_tokens"]), int(info["max_input_tokens"]))
 
-	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input, "start": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
+	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}, separators=(',', ':')))
 	outputfile.write("\n")
 	outputfile.flush()
 
@@ -84,20 +84,18 @@ async def main():
 	semaphore = asyncio.Semaphore(batch_size)
 
 	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size))
-	start = time.perf_counter()
-
 	for name, dataset in tqdm.tqdm(tasks.items(), desc="run_tasks", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]"):
 		field = dataset["field"]
+		outputfile.write(json.dumps({"start_task": name, "wallclock": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
+		outputfile.write("\n")
+		start = time.perf_counter()
 		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item[field], max_input) for item in dataset["dataset"]], desc=name):
 			outputfile.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
 			outputfile.write("\n")
-
-	outputfile.write(json.dumps({"since_start": time.perf_counter() - start}, separators=(',', ':')))
-	outputfile.write("\n")
+		outputfile.write(json.dumps({"completed_task": name, "monotonic": time.perf_counter() - start}, separators=(',', ':')))
+		outputfile.write("\n")
 
 	print("flush_output_file", outputfilename)
-	outputfile.write(json.dumps({"finish": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
-	outputfile.write("\n")
 	outputfile.flush()
 	os.fsync(outputfile)
 	outputfile.close()
