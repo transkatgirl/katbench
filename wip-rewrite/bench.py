@@ -9,12 +9,12 @@ from datasets import load_dataset
 from huggingface_hub import AsyncInferenceClient
 
 parser = argparse.ArgumentParser()
-parser.add_argument('base_url')
-parser.add_argument('--api_key')
-parser.add_argument('--model')
-parser.add_argument('--task_file')
-parser.add_argument('--output_file')
-parser.add_argument('--context_len')
+parser.add_argument('base_url', type=str)
+parser.add_argument('--api_key', type=str)
+parser.add_argument('--model', type=str)
+parser.add_argument('--task_file', type=str)
+parser.add_argument('--output_file', type=str)
+parser.add_argument('--context_len', type=int)
 
 args = parser.parse_args()
 
