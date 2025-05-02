@@ -48,6 +48,12 @@ async def _run_task_loop(client, prompt, truncate):
 	else:
 		return output.details.prefill
 
+def convert_output_format(output):
+	tokens = []
+	for token in output:
+		tokens.append({token.text: token.logprob})
+	return tokens
+
 async def main():
 	taskfilename = args.task_file or "tasks.json"
 	outputfilename = args.output_file or "output.jsonl"
@@ -69,7 +75,7 @@ async def main():
 
 	print(info)
 
-	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "max_input": max_input}))
+	outputfile.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input}))
 	outputfile.write("\n")
 	outputfile.flush()
 
@@ -77,16 +83,15 @@ async def main():
 
 	for name, dataset in tasks.items():
 		print("run_task", name, info["model_id"], "context_len="+str(max_input))
-		#task_results = []
 
 		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, client, item, max_input) for item in dataset]):
-			#task_results.append(await result)
-			outputfile.write(json.dumps({name: await result}))
+			outputfile.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
 			outputfile.write("\n")
 
-		#outputfile.write(json.dumps({name: task_results}))
-		#outputfile.write("\n")
-		outputfile.flush()
+	print("flush_output_file", outputfilename)
+	outputfile.flush()
+	os.fsync(outputfile)
+	outputfile.close()
 
 if __name__ == '__main__':
 	asyncio.run(main())
