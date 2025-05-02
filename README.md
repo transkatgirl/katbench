@@ -20,7 +20,7 @@ python bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE]
 
 ### collate.py
 
-combines incomplete runs saved by `bench.py` into one output file, removing unfinished tasks and corrupted JSON.
+combines incomplete runs saved by `bench.py` into one output file, removing unfinished tasks and trimming corrupted JSON
 
 ```bash
 python collate.py [-h] [--output_file OUTPUT_FILE] input_files [input_files ...]
@@ -29,5 +29,11 @@ python collate.py [-h] [--output_file OUTPUT_FILE] input_files [input_files ...]
 ### analyze.py
 
 analyzes data saved to disk by `bench.py` and calculates metrics
+
+WIP
+
+### compare.py
+
+analyzes multiple outputs from `analyze.py` and creates comparisons
 
 WIP
