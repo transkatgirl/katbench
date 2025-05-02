@@ -6,7 +6,7 @@ what i use to compare LLM base models using dataset perplexities
 you will need:
 
 - a python3 venv with the dependencies specified in `requirements.txt`
-- a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index) run with the `--trust-remote-code --enable-prefill-logprobs --payload-limit 100000000 --max-client-batch-size 16` flags
+- a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index) run with the `--enable-prefill-logprobs --max-client-batch-size 16` flags
 
 ## usage
 
@@ -15,8 +15,10 @@ you will need:
 performs dataset tokenization & logprob calculation using remote LLM server, saving results to disk
 
 ```bash
-python bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN] base_url
+python bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN] [--payload_limit PAYLOAD_LIMIT] base_url
 ```
+
+note: if you plan on testing very long context lengths (>100k tokens), you will need to use the `--payload-limit 100000000` flag on the TGI server, and the `--payload_limit 100000000` flag on the `bench.py` script
 
 ### collate.py
 
