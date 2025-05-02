@@ -6,8 +6,75 @@ import time
 import datetime
 import math
 import nltk
-import numpy
-from tokenizers import Tokenizer
+import numpy as np
+
+nltk.download('punkt_tab')
+
+parser = argparse.ArgumentParser()
+parser.add_argument('input_data', type=str)
+parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
+parser.add_argument('--normalize_tokenizer', type=str)
+
+args = parser.parse_args()
+
+def calculate_metrics(token_logprobs, chunk_size):
+	text = ""
+	logprobs = []
+	for token in token_logprobs:
+		for key, value in token.items():
+			if value:
+				logprobs.append(value)
+				text += key
+
+	byte_count = len(text.encode("utf-8"))
+	word_count = len(nltk.tokenize.word_tokenize(text))
+	token_count = len(logprobs)
+
+	logprob_sum = np.sum(logprobs)
+
+	return {
+		"byte_count": byte_count,
+		"word_count": word_count,
+		"token_count": token_count,
+		"word_perplexity": math.exp(-logprob_sum / max(word_count, 1)),
+		"byte_perplexity": math.exp(-logprob_sum / max(byte_count, 1)),
+		"token_perplexity": math.exp(-np.mean(logprobs)),
+		"bits_per_byte": -logprob_sum / max(byte_count, 1) * 1 / math.log(2),
+	}
+
+def process_input_data(filename):
+	input_file = open(filename)
+
+	metadata = {}
+	task_metrics = {}
+	tasks = {}
+
+	for line in input_file:
+		line_data = json.loads(line)
+		if len(metadata) == 0:
+			metadata = line_data
+			continue
+
+		task_name = None
+		for key, value in line_data.items():
+			if key == "start_task":
+				task_name = value
+				task_metrics[value] = {"completed": False}
+			elif key == "completed_task":
+				task_name = value
+				task_metrics[value]["completed"] = True
+			elif task_name:
+				task_metrics[task_name][key] = value
+			elif isinstance(value, list):
+				task_name = key
+				if task_name not in tasks:
+					tasks[task_name] = []
+				#tasks[task_name].append(calculate_metrics(value))
+				print(calculate_metrics(value))
+
+	input_file.close()
+
+process_input_data(args.input_data)
 
 # TODO: rewrite this to provide one input file and many output files
 
@@ -24,6 +91,7 @@ from tokenizers import Tokenizer
 # - make data distributions visible
 # - make statistical significance visible
 
+"""
 parser = argparse.ArgumentParser()
 parser.add_argument('bench_data', nargs="+", type=str)
 parser.add_argument('--data_output_file', type=str)
@@ -137,3 +205,4 @@ for filename in args.bench_data:
 		summary[key] = calculate_task_metrics(value)
 
 	print(json.dumps(summary, indent="\t"))
+"""
