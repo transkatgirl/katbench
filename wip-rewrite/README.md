@@ -18,6 +18,6 @@ performs dataset logprob calculation using remote LLM server, saving logprobs to
 
 ### analyze.py
 
-analyzes logprobs from `bench.py` and calculates metrics
+analyzes logprobs saved to disk by `bench.py` and calculates metrics
 
 TODO
