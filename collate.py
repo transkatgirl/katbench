@@ -14,6 +14,7 @@ output_file = open(args.output_file, "x")
 
 metadata = {"collated": args.input_files}
 global_completed_tasks = set([])
+global_collated_task_list = []
 
 for filename in args.input_files:
 	print("process_input_file", filename)
@@ -45,6 +46,7 @@ for filename in args.input_files:
 				if key == "completed_task" and value not in global_completed_tasks:
 					completed_tasks.add(value)
 					global_completed_tasks.add(value)
+					global_collated_task_list.append(value)
 		except:
 			break
 
@@ -84,3 +86,5 @@ output_file.write("\n")
 output_file.flush()
 os.fsync(output_file)
 output_file.close()
+
+print("collated tasks = ", global_collated_task_list)
