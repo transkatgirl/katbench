@@ -17,7 +17,7 @@ parser.add_argument('--normalize_tokenizer', type=str)
 
 args = parser.parse_args()
 
-def calculate_metrics(token_logprobs):
+def calculate_item_metrics(token_logprobs):
 	text = ""
 	logprobs = []
 	for token in token_logprobs:
@@ -70,7 +70,7 @@ def process_input_data(filename):
 				if task_name not in tasks:
 					tasks[task_name] = []
 				#tasks[task_name].append(calculate_metrics(value))
-				print(calculate_metrics(value))
+				print(calculate_item_metrics(value))
 
 	input_file.close()
 
