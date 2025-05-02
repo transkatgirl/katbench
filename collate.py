@@ -61,12 +61,15 @@ for filename in args.input_files:
 			for key, value in line_data.items():
 				if key in completed_tasks:
 					output_file.write(json.dumps(line_data, separators=(',', ':')))
+					output_file.write("\n")
 					break
 				elif key == "start_task" and value in completed_tasks:
 					output_file.write(json.dumps(line_data, separators=(',', ':')))
+					output_file.write("\n")
 					break
 				elif key == "completed_task" and value in completed_tasks:
 					output_file.write(json.dumps(line_data, separators=(',', ':')))
+					output_file.write("\n")
 					break
 		except:
 			continue
