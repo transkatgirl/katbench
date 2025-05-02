@@ -9,10 +9,36 @@ parser.add_argument('--output_file', type=str, default="output-collated-" + str(
 
 args = parser.parse_args()
 
+metadata = {"collated": args.input_files}
+
+for filename in args.input_files:
+	print("scan_input_file", filename)
+	input_file = open(filename)
+
+	completed_tasks = set([])
+
+	line_data = json.loads(input_file.readline())
+	for key, value in line_data.items():
+		if key not in metadata:
+			metadata[key] = value
+		elif key == "tasks":
+			for key, value in value.items():
+				if key not in metadata["tasks"]:
+					metadata["tasks"][key] = value
+				else:
+					assert metadata["tasks"][key] == value
+		elif key == "collated":
+			metadata["collated"] = [*value, *metadata["collated"]]
+		else:
+			assert metadata[key] == value
+
+	input_file.close()
+
 print("open_output_file", args.output_file)
 output_file = open(args.output_file, "x")
+output_file.write(json.dumps(metadata, separators=(',', ':')))
+output_file.write("\n")
 
-metadata = {"collated": args.input_files}
 global_completed_tasks = set([])
 global_collated_task_list = []
 
@@ -26,20 +52,7 @@ for filename in args.input_files:
 	for line in input_file:
 		if is_start:
 			is_start = False
-			line_data = json.loads(line)
-			for key, value in line_data.items():
-				if key not in metadata:
-					metadata[key] = value
-				elif key == "tasks":
-					for key, value in value.items():
-						if key not in metadata["tasks"]:
-							metadata["tasks"][key] = value
-						else:
-							assert metadata["tasks"][key] == value
-				elif key == "collated":
-					metadata["collated"] = [*value, *metadata["collated"]]
-				else:
-					assert metadata[key] == value
+			continue
 		try:
 			line_data = json.loads(line)
 			for key, value in line_data.items():
@@ -79,9 +92,6 @@ for filename in args.input_files:
 	input_file.close()
 
 print("close_output_file", args.output_file)
-output_file.seek(0)
-output_file.write(json.dumps(metadata, separators=(',', ':')))
-output_file.write("\n")
 
 output_file.flush()
 os.fsync(output_file)
