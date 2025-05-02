@@ -38,6 +38,7 @@ for filename in args.bench_data:
 				llm_token_perplexity = math.exp(-logprob_sum / token_count)
 				normalized_token_perplexity = math.exp(-logprob_sum / len(tokenizer.encode(text)))
 				byte_perplexity = math.exp(-logprob_sum / byte_count)
+				bits_per_byte = -logprob_sum / byte_count * 1 / math.log(2)
 
-				print(task, "byte_perplexity", byte_perplexity, "normalized_token_perplexity", normalized_token_perplexity)
+				print(task, "bits_per_byte", bits_per_byte, "normalized_token_perplexity", normalized_token_perplexity)
 	file.close()
