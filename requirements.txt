@@ -5,6 +5,7 @@ asyncio==3.4.3
 attrs==25.3.0
 certifi==2025.4.26
 charset-normalizer==3.4.2
+click==8.1.8
 datasets==3.5.1
 DateTime==5.5
 dill==0.3.8
@@ -13,8 +14,10 @@ frozenlist==1.6.0
 fsspec==2025.3.0
 huggingface-hub==0.30.2
 idna==3.10
+joblib==1.4.2
 multidict==6.4.3
 multiprocess==0.70.16
+nltk==3.9.1
 numpy==2.2.5
 packaging==25.0
 pandas==2.2.3
@@ -23,6 +26,7 @@ pyarrow==20.0.0
 python-dateutil==2.9.0.post0
 pytz==2025.2
 PyYAML==6.0.2
+regex==2024.11.6
 requests==2.32.3
 setuptools==80.1.0
 six==1.17.0

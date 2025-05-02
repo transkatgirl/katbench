@@ -5,7 +5,10 @@ import tqdm
 import time
 import datetime
 import math
+import nltk
 from tokenizers import Tokenizer
+
+nltk.download('punkt_tab')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('bench_data', nargs="+", type=str)
@@ -35,8 +38,10 @@ for filename in args.bench_data:
 							text += key
 							logprob_sum += value
 				byte_count = len(text.encode("utf-8"))
+				word_count = len(nltk.tokenize.word_tokenize(text))
 				llm_token_perplexity = math.exp(-logprob_sum / token_count)
 				normalized_token_perplexity = math.exp(-logprob_sum / len(tokenizer.encode(text)))
+				word_perplexity = math.exp(-logprob_sum / word_count)
 				byte_perplexity = math.exp(-logprob_sum / byte_count)
 				bits_per_byte = -logprob_sum / byte_count * 1 / math.log(2)
 
