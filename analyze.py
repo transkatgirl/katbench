@@ -12,6 +12,7 @@ from tokenizers import Tokenizer
 # TODO: rewrite this to provide one input file and many output files
 
 # measurements to include in rewrite:
+# - perplexity / bits per byte by position
 # - perplexity / bits per byte by input length
 # - perplexity / bits per byte by task
 # - tokens/bytes per second by input length
