@@ -81,24 +81,39 @@ for filename in args.bench_data:
 	file = open(filename)
 	metadata = {}
 	tasks = {}
+	task_data = {}
 
 	for line in file:
 		linedata = json.loads(line)
 		if len(metadata) == 0:
 			for key, value in linedata.items():
 				metadata[key] = value
+		task = None
+		is_task_end = False
 		for key, value in linedata.items():
+			if key == "start_task":
+				task = value
+				task_data[value] = {"total_tokens": 0, "total_bytes": 0}
+			elif key == "completed_task":
+				task = value
+				task_data[value]["completed"] = True
+			elif task:
+				task_data[task][key] = value
 			if isinstance(value, list):
 				task = key
 				if task not in tasks:
 					tasks[task] = []
-				tasks[task].append(calculate_metrics(value))
+				metrics = calculate_metrics(value)
+				tasks[task].append(metrics)
+				task_data[task]["total_bytes"] += metrics["byte_count"]
+				task_data[task]["total_tokens"] += metrics["token_count"]
 
 	file.close()
 
 	if args.data_output_file:
 		with open(args.data_output_file, "x") as file:
-			json.dump({"metadata": metadata, "tasks": tasks}, file, indent="\t")
+			#json.dump({"metadata": metadata, "tasks": tasks}, file, separators=(',', ':'))
+			json.dump({"metadata": metadata, "task_data": task_data, "tasks": tasks}, file, indent="\t")
 
 	summary = {}
 
