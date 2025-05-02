@@ -6,44 +6,103 @@ import time
 import datetime
 import math
 import nltk
+import numpy
 from tokenizers import Tokenizer
-
-nltk.download('punkt_tab')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('bench_data', nargs="+", type=str)
-parser.add_argument('--output_file', type=str)
+parser.add_argument('--data_output_file', type=str)
 parser.add_argument('--tokenizer', type=str)
 
 args = parser.parse_args()
 
-outputfilename = args.output_file or "metrics-" + str(round(time.time())) + ".json"
-
 tokenizer = Tokenizer.from_pretrained(args.tokenizer or "allenai/OLMo-2-0425-1B")
+
+nltk.download('punkt_tab')
+
+def calculate_metrics(token_logprobs):
+	token_count = 0
+	text = ""
+	logprob_sum = 0
+	for token in token_logprobs:
+		for key, value in token.items():
+			if value:
+				token_count += 1
+				text += key
+				logprob_sum += value
+	byte_count = len(text.encode("utf-8"))
+	word_count = len(nltk.tokenize.word_tokenize(text))
+
+	return {
+		"byte_count": byte_count,
+		"word_count": word_count,
+		"token_count": token_count,
+		"word_perplexity": math.exp(-logprob_sum / word_count),
+		"byte_perplexity": math.exp(-logprob_sum / byte_count),
+		"token_perplexity": math.exp(-logprob_sum / token_count),
+		"normalized_token_perplexity": math.exp(-logprob_sum / len(tokenizer.encode(text))),
+		"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
+	}
+
+def calculate_task_metrics(items):
+	task_items = {}
+
+	for item in items:
+		for key, value in item.items():
+			if key not in task_items:
+				task_items[key] = []
+			task_items[key].append(value)
+
+	metrics = {}
+
+	for key, value in task_items.items():
+		quartiles = numpy.percentile(value, [1, 5, 10, 25, 50, 75, 90, 95, 99])
+
+		metrics[key] = {
+			"n": len(items),
+			"mean": float(numpy.mean(value)),
+			"std": float(numpy.std(value)),
+			"percentiles": {
+				"1": float(quartiles[0]),
+				"5": float(quartiles[1]),
+				"10": float(quartiles[2]),
+				"25": float(quartiles[3]),
+				"50": float(quartiles[4]),
+				"75": float(quartiles[5]),
+				"90": float(quartiles[6]),
+				"95": float(quartiles[7]),
+				"99": float(quartiles[8]),
+			}
+		}
+
+	return metrics
 
 for filename in args.bench_data:
 	file = open(filename)
+	metadata = {}
+	tasks = {}
+
 	for line in file:
 		linedata = json.loads(line)
+		if len(metadata) == 0:
+			for key, value in linedata.items():
+				metadata[key] = value
 		for key, value in linedata.items():
 			if isinstance(value, list):
 				task = key
-				token_count = 0
-				text = ""
-				logprob_sum = 0
-				for token in value:
-					for key, value in token.items():
-						if value:
-							token_count += 1
-							text += key
-							logprob_sum += value
-				byte_count = len(text.encode("utf-8"))
-				word_count = len(nltk.tokenize.word_tokenize(text))
-				llm_token_perplexity = math.exp(-logprob_sum / token_count)
-				normalized_token_perplexity = math.exp(-logprob_sum / len(tokenizer.encode(text)))
-				word_perplexity = math.exp(-logprob_sum / word_count)
-				byte_perplexity = math.exp(-logprob_sum / byte_count)
-				bits_per_byte = -logprob_sum / byte_count * 1 / math.log(2)
+				if task not in tasks:
+					tasks[task] = []
+				tasks[task].append(calculate_metrics(value))
 
-				print(task, "bits_per_byte", bits_per_byte, "normalized_token_perplexity", normalized_token_perplexity)
 	file.close()
+
+	if args.data_output_file:
+		with open(args.data_output_file, "x") as file:
+			json.dump({"metadata": metadata, "tasks": tasks}, file, indent="\t")
+
+	summary = {}
+
+	for key, value in tasks.items():
+		summary[key] = calculate_task_metrics(value)
+
+	print(json.dumps(summary, indent="\t"))
