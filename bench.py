@@ -7,6 +7,7 @@ import time
 import datetime
 from datasets import load_dataset
 from huggingface_hub import AsyncInferenceClient
+from tenacity import retry, wait_random_exponential, stop_after_delay
 
 parser = argparse.ArgumentParser()
 parser.add_argument('base_url', type=str)
@@ -42,7 +43,7 @@ async def run_task(semaphore, payload_limit, client, prompt, truncate):
 		return await _run_task_loop(payload_limit, client, prompt, truncate)
 
 async def _run_task_loop(payload_limit, client, prompt, truncate):
-	output = await client.text_generation(prompt=prompt[:payload_limit], stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
+	output = await _run_task_request(client, prompt[:payload_limit], truncate)
 	characters = 0
 	for token in output.details.prefill[1:]:
 		characters += len(token.text)
@@ -51,6 +52,10 @@ async def _run_task_loop(payload_limit, client, prompt, truncate):
 		return [*output.details.prefill, *split_output]
 	else:
 		return output.details.prefill
+
+@retry(wait=wait_random_exponential(multiplier=1,max=60), stop=stop_after_delay(120))
+async def _run_task_request(client, prompt, truncate):
+    return await client.text_generation(prompt=prompt, stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
 
 def convert_output_format(output):
 	tokens = []
