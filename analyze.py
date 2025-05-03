@@ -74,10 +74,9 @@ def calculate_task_data_metrics(items, prob_metrics):
 		token_perplexities.append(item["token_perplexity"])
 		bpbs.append(item["bits_per_byte"])
 		bytes_per_token.append(item["byte_count"] / item["token_count"])
-		words_per_token.append(item["word_count"] / item["token_count"])
-		bytes_per_word.append(item["byte_count"] / item["word_count"])
-
-	# TODO: Calculate histograms
+		if item["word_count"] > 0:
+			words_per_token.append(item["word_count"] / item["token_count"])
+			bytes_per_word.append(item["byte_count"] / item["word_count"])
 
 	return {
 		"size": {
@@ -108,18 +107,27 @@ def calculate_task_data_metrics(items, prob_metrics):
 	}
 
 def calculate_task_element_metrics(items):
+	# TODO: Calculate histograms
+
     return {
 		"min": float(np.min(items)),
 		"max": float(np.max(items)),
 		"mean": float(np.mean(items)),
 		"median": float(np.median(items)),
 		"stdev": float(np.std(items)),
+  		"lower_bound": float(np.percentile(items, confidence_bounds[0])),
+		"upper_bound": float(np.percentile(items, confidence_bounds[1])),
 	}
 
 def calculate_task_throughput_metrics(task_metrics):
-	# TODO: Calculate metrics
-
-	return {}
+	return {
+		"throughput_statistics": {
+			"seconds_per_task": task_metrics["duration"] / task_metrics["size"]["items"],
+			"bytes_per_second": task_metrics["size"]["bytes"] / task_metrics["duration"],
+			"words_per_second": task_metrics["size"]["words"] / task_metrics["duration"],
+			"tokens_per_second": task_metrics["size"]["tokens"] / task_metrics["duration"],
+		}
+	}
 
 def calculate_task_positional_metrics(positional_probs):
 	prob_counts = []
@@ -187,18 +195,21 @@ def process_input_data(filename):
 
 	print("calculate_run_metrics")
 	for key, value in task_metrics.items():
+		task_name = key
 		task_metrics[key]["started"] = task_metrics[key]["wallclock"]
 		del task_metrics[key]["wallclock"]
 		if "monotonic_ns" in task_metrics[key]:
 			task_metrics[key]["duration"] = task_metrics[key]["monotonic_ns"] / 1000000000.0
 			del task_metrics[key]["monotonic_ns"]
-			for key, value in calculate_task_throughput_metrics(value):
+			for key, value in calculate_task_throughput_metrics(task_metrics[key]).items():
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
 			#print("analyze_task", task_name)
 			for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_positional_metrics(task_positional_probs[task_name])).items():
 				task_metrics[task_name][key] = value
 			task_positional_probs[task_name] = {}
+
+	# TODO: Output and graphing
 
 	print(json.dumps(task_metrics, indent="\t"))
 
