@@ -47,6 +47,18 @@ def calculate_item_metrics(token_logprobs):
 		logprobs
     )
 
+def calculate_task_metrics(items, logprob_metrics, metadata):
+	# TODO: Calculate metrics
+
+	return {
+		"items": len(items)
+	}
+
+def calculate_task_logprob_metrics(positional_logprobs):
+	# TODO: Calculate metrics, add progress bar?
+
+    return {}
+
 def get_input_line_count(filename):
 	with open(filename) as file:
 		return sum(1 for line in file)
@@ -60,8 +72,9 @@ def process_input_data(filename):
 	task_metrics = {}
 	tasks = {}
 	task_positional_logprobs = {}
+	task_logprob_metrics = {}
 
-	for line in tqdm.tqdm(input_file, desc="analyze_lines", total=line_count):
+	for line in tqdm.tqdm(input_file, desc="analyze_items", total=line_count):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
@@ -75,8 +88,8 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
+				task_logprob_metrics[value] = calculate_task_logprob_metrics(task_positional_logprobs[value])
 				task_positional_logprobs[value] = {}
-				# TODO: Calculate metrics from task_positional_logprobs
 			elif task_name:
 				task_metrics[task_name][key] = value
 			elif isinstance(value, list):
@@ -91,7 +104,25 @@ def process_input_data(filename):
 						task_positional_logprobs[task_name][i] = []
 					task_positional_logprobs[task_name][i].append(logprob)
 
-	# TODO: Calculate metrics from tasks and task_metrics
+	for key, value in task_metrics.items():
+		task_metrics[key]["started"] = task_metrics[key]["wallclock"]
+		del task_metrics[key]["wallclock"]
+		if "monotonic_ns" in task_metrics[key]:
+			task_metrics[key]["duration"] = task_metrics[key]["monotonic_ns"] / 1000000000.0
+			del task_metrics[key]["monotonic_ns"]
+
+	for key, value in tqdm.tqdm(tasks.items(), desc="analyze_tasks"):
+		task_name = key
+		task_logprob_metrics = {}
+		if task_name in task_logprob_metrics:
+			task_logprob_metrics = task_logprob_metrics[task_name]
+		elif task_name in task_positional_logprobs and len(task_positional_logprobs[task_name]) > 0:
+			task_logprob_metrics = calculate_task_logprob_metrics(task_positional_logprobs[task_name])
+			task_positional_logprobs[task_name] = {}
+		for key, value in calculate_task_metrics(value, task_logprob_metrics, task_metrics).items():
+			task_metrics[task_name][key] = value
+
+	print(json.dumps(task_metrics, indent="\t"))
 
 	input_file.close()
 
