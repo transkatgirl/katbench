@@ -7,60 +7,56 @@ import datetime
 import math
 import nltk
 import numpy as np
-import copy
 
 nltk.download('punkt_tab')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('input_data', type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
-parser.add_argument('--calculate_slow_metrics', action='store_true')
 
 args = parser.parse_args()
 
-def calculate_item_metrics(token_logprobs, calculate_slow_metrics):
+def calculate_item_metrics(token_logprobs):
 	text = ""
 	logprobs = []
-	segments = []
 	for token in token_logprobs:
 		for key, value in token.items():
 			if value:
 				logprobs.append(value)
 				text += key
-				if calculate_slow_metrics:
-					segments.append((copy.copy(text), copy.copy(logprobs)))
 
-	segment_metrics = []
-	for segment in segments:
-		segment_metrics.append(_calculate_segment_metrics(segment[0], segment[1]))
-
-	return (_calculate_segment_metrics(text, logprobs), segment_metrics)
-
-def _calculate_segment_metrics(text, logprobs):
 	byte_count = len(text.encode("utf-8"))
 	word_count = len(nltk.tokenize.word_tokenize(text))
 	token_count = len(logprobs)
 
 	logprob_sum = np.sum(logprobs)
 
-	return {
-		"byte_count": byte_count,
-		"word_count": word_count,
-		"token_count": token_count,
-		"word_perplexity": math.exp(-logprob_sum / max(word_count, 1)),
-		"byte_perplexity": math.exp(-logprob_sum / max(byte_count, 1)),
-		"token_perplexity": math.exp(-np.mean(logprobs)),
-		"bits_per_byte": -logprob_sum / max(byte_count, 1) * 1 / math.log(2),
-	}
+	return (
+		{
+			"byte_count": byte_count,
+			"word_count": word_count,
+			"token_count": token_count,
+			"word_perplexity": math.exp(-logprob_sum / max(word_count, 1)),
+			"byte_perplexity": math.exp(-logprob_sum / max(byte_count, 1)),
+			"token_perplexity": math.exp(-np.mean(logprobs)),
+			"bits_per_byte": -logprob_sum / max(byte_count, 1) * 1 / math.log(2),
+		},
+		logprobs
+    )
+
+def get_input_line_count(filename):
+	with open(filename) as file:
+		return sum(1 for line in file)
 
 def process_input_data(filename):
+	line_count = get_input_line_count(filename)
 	input_file = open(filename)
 
 	metadata = {}
 	task_metrics = {}
 	tasks = {}
 
-	for line in input_file:
+	for line in tqdm.tqdm(input_file, desc="analyze_lines", total=line_count):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
@@ -80,23 +76,31 @@ def process_input_data(filename):
 				task_name = key
 				if task_name not in tasks:
 					tasks[task_name] = []
-				#tasks[task_name].append(calculate_metrics(value))
-				print(calculate_item_metrics(value, args.calculate_slow_metrics)[0])
+				#tasks[task_name].append(calculate_metrics(value)[0])
+				#print(calculate_item_metrics(value, args.stride)[0])
+				calculate_item_metrics(value) # FIXME
 
 	input_file.close()
 
 process_input_data(args.input_data)
 
-# TODO: rewrite this to provide one input file and many output files
 
 # measurements to include in rewrite:
-# - perplexity / bits per byte by position
+# - perplexity by position
 # - perplexity / bits per byte by input length
 # - perplexity / bits per byte by task
 # - tokens/bytes per second by input length
 # - tokens/bytes per second by task
 # - bytes/token by task
 # - words/token by task
+
+# - perplexity / bits per byte by model
+# - perplexity / bits per byte by task + model
+# - perplexity by position + model
+# - bytes/token by model
+# - bytes/token by task + model
+# - words/token by model
+# - words/token by task + model
 
 # create graphical plots, don't just output a handful of measurements
 # - make data distributions visible
