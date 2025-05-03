@@ -113,12 +113,14 @@ def calculate_task_element_metrics(items):
 		"min": float(np.min(items)),
 		"max": float(np.max(items)),
 		"mean": float(np.mean(items)),
-		"median": float(np.median(items)),
 		"stdev": float(np.std(items)),
-		"lower_quartile": float(np.percentile(items, 25)),
-		"upper_quartile": float(np.percentile(items, 75)),
-  		"lower_bound": float(np.percentile(items, confidence_bounds[0])),
-		"upper_bound": float(np.percentile(items, confidence_bounds[1])),
+		"percentiles": {
+			str(confidence_bounds[0]): float(np.percentile(items, confidence_bounds[0])),
+			"25": float(np.percentile(items, 25)),
+			"50": float(np.median(items)),
+			"75": float(np.percentile(items, 75)),
+			str(confidence_bounds[1]): float(np.percentile(items, confidence_bounds[1])),
+		},
 	}
 
 def calculate_task_throughput_metrics(task_metrics):
@@ -136,17 +138,25 @@ def calculate_task_positional_metrics(positional_probs):
 	prob_medians = []
 	prob_lower_quartile = []
 	prob_upper_quartile = []
+	prob_lower_bound = []
+	prob_upper_bound = []
 	for prob_set in positional_probs.values():
 		prob_counts.append(len(prob_set))
 		prob_medians.append(np.median(prob_set))
 		prob_lower_quartile.append(np.percentile(prob_set, 25))
 		prob_upper_quartile.append(np.percentile(prob_set, 75))
+		prob_lower_bound.append(np.percentile(prob_set, confidence_bounds[0]))
+		prob_upper_bound.append(np.percentile(prob_set, confidence_bounds[1]))
 
 	return {
 		"count": prob_counts,
-		"median": prob_medians,
-		"lower_quartile": prob_lower_quartile,
-		"upper_quartile": prob_upper_quartile,
+		"percentiles": {
+			str(confidence_bounds[0]): prob_lower_bound,
+			"25": prob_lower_quartile,
+			"50": prob_medians,
+			"75": prob_upper_quartile,
+			str(confidence_bounds[1]): prob_upper_bound,
+		},
 	}
 
 def get_input_line_count(filename):
