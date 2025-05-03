@@ -66,12 +66,12 @@ def calculate_task_throughput_metrics(task_metrics):
 
 	return {}
 
-def calculate_task_prob_metrics(positional_probs):
+def calculate_task_positional_metrics(positional_probs):
 	prob_counts = []
 	prob_means = []
 	prob_lower_bounds = []
 	prob_upper_bounds = []
-	for prob_set in positional_probs:
+	for prob_set in positional_probs.values():
 		prob_counts.append(len(prob_set))
 		prob_means.append(math.exp(-np.mean(prob_set)))
 		prob_lower_bounds.append(math.exp(-np.percentile(prob_set, confidence_bounds[0])))
@@ -112,9 +112,9 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
-				task_positional_probs[value] = {}
-				for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_prob_metrics(task_positional_probs[value])).items():
+				for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_positional_metrics(task_positional_probs[task_name])).items():
 					task_metrics[task_name][key] = value
+				task_positional_probs[task_name] = {}
 			elif task_name:
 				task_metrics[task_name][key] = value
 			elif isinstance(value, list):
@@ -137,9 +137,10 @@ def process_input_data(filename):
 			del task_metrics[key]["monotonic_ns"]
 			for key, value in calculate_task_throughput_metrics(value):
 				task_metrics[task_name][key] = value
-		if not task_metrics[key]["completed"]:
-			for key, value in calculate_task_data_metrics(tasks[key], calculate_task_prob_metrics(task_positional_probs[key])).items():
+		elif not task_metrics[key]["completed"]:
+			for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_prob_metrics(task_positional_probs[task_name])).items():
 				task_metrics[task_name][key] = value
+			task_positional_probs[task_name] = {}
 
 	print(json.dumps(task_metrics, indent="\t"))
 
