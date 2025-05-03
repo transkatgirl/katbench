@@ -159,7 +159,7 @@ def graph_task_tokenization(items, task_name, bins, filename):
 
 	plt.figure()
 	plt.suptitle(task_name+" bytes per token (n="+str(len(bytes_per_token))+")")
-	plt.xlabel("Bytes / Token")
+	plt.xlabel("UTF-8 Bytes / Token")
 	plt.ylabel("Dataset Items")
 	plt.hist(bytes_per_token, bins=bins)
 	plt.xlim(xmin=1)
@@ -180,7 +180,7 @@ def graph_task_perplexity(items, task_name, bins, filename):
 	logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
 	plt.hist(perplexities, bins=logbins)
 
-	plt.xlim(xmin=1)
+	plt.xlim([1, 1000])
 	plt.savefig(filename)
 	plt.close()
 
@@ -204,7 +204,7 @@ def graph_task_positional_perplexity(positional_probs, task_name, confidence_int
 	plt.ylabel("Token Perplexity")
 	plt.semilogy()
 	plt.xlim([0, items])
-	plt.ylim([1, np.max(prob_upper_bound[16:items-16])])
+	plt.ylim([1, 1000])
 	plt.plot(range(0, items), prob_median)
 	plt.fill_between(range(0, items), prob_lower_bound, prob_upper_bound, alpha=0.2)
 	plt.savefig(filename)
