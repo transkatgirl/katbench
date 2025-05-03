@@ -30,13 +30,17 @@ def calculate_item_metrics(token_logprobs):
 	probs = []
 	logprob_sum = 0
 	token_count = 0
+	wrapped = False
 	for token in token_logprobs:
 		for key, value in token.items():
 			if value:
 				text += key
 				logprob_sum += value
-				probs.append(math.exp(-value))
 				token_count += 1
+				if not wrapped:
+					probs.append(math.exp(-value))
+			elif len(probs) > 0:
+				wrapped = True
 
 	byte_count = max(len(text.encode("utf-8")), 1)
 	word_count = max(len(nltk.tokenize.word_tokenize(text)), 1)
@@ -151,7 +155,7 @@ def graph_task_perplexity(items, task_name, bins, filename):
 	plt.figure()
 	plt.suptitle(task_name+" perplexity (n="+str(len(perplexities))+")")
 	plt.xlabel("Token Perplexity")
-	plt.ylabel("Count")
+	plt.ylabel("Dataset Items")
 	plt.semilogx()
 	hist, bins = np.histogram(perplexities, bins=bins)
 	logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
@@ -161,7 +165,7 @@ def graph_task_perplexity(items, task_name, bins, filename):
 	plt.savefig(filename)
 	plt.close()
 
-def graph_task_positional_perplexity(positional_probs, task_name, confidence_interval, context_len, filename):
+def graph_task_positional_perplexity(positional_probs, task_name, confidence_interval, filename):
 	positional_probs=list(positional_probs.values())
 
 	prob_median = []
@@ -176,12 +180,12 @@ def graph_task_positional_perplexity(positional_probs, task_name, confidence_int
 	items = len(positional_probs)
 
 	plt.figure()
-	plt.suptitle(task_name+" perplexity by position (n="+str(len(positional_probs[min(context_len,items)-1]))+", "+str(confidence_interval)+"% CI)")
+	plt.suptitle(task_name+" perplexity by position (n="+str(len(positional_probs[items-1]))+", "+str(confidence_interval)+"% CI)")
 	plt.xlabel("Token Position")
 	plt.ylabel("Token Perplexity")
 	plt.semilogy()
-	plt.xlim([0, context_len])
-	plt.ylim([1, np.max(prob_upper_bound[16:context_len-16])])
+	plt.xlim([0, items])
+	plt.ylim([1, np.max(prob_upper_bound[16:items-16])])
 	plt.plot(range(0, items), prob_median)
 	plt.fill_between(range(0, items), prob_lower_bound, prob_upper_bound, alpha=0.2)
 	plt.savefig(filename)
@@ -216,7 +220,7 @@ def process_input_data(filename):
 				task_name = value
 				task_metrics[value]["completed"] = True
 				graph_task_perplexity(tasks[task_name], task_name, 32, "output/"+task_name+"-perplexity.png")
-				graph_task_positional_perplexity(task_positional_probs[task_name], task_name, 80, 2046, "output/"+task_name+"-positional-perplexity.png") # FIXME
+				graph_task_positional_perplexity(task_positional_probs[task_name], task_name, 80, "output/"+task_name+"-positional-perplexity.png") # FIXME
 				for key, value in calculate_task_data_metrics(tasks[task_name], {}).items():
 					task_metrics[task_name][key] = value
 				task_positional_probs[task_name] = {}
@@ -246,7 +250,7 @@ def process_input_data(filename):
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
 			graph_task_perplexity(tasks[task_name], task_name+"*", 32, "output/"+task_name+"-perplexity.png")
-			graph_task_positional_perplexity(task_positional_probs[task_name], task_name+"*", 50, 2046, "output/"+task_name+"-positional-perplexity.png") # FIXME
+			graph_task_positional_perplexity(task_positional_probs[task_name], task_name+"*", 50, "output/"+task_name+"-positional-perplexity.png") # FIXME
 			for key, value in calculate_task_data_metrics(tasks[task_name], {}).items():
 				task_metrics[task_name][key] = value
 			task_positional_probs[task_name] = {}
