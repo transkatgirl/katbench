@@ -7,6 +7,7 @@ import datetime
 import math
 import nltk
 import numpy as np
+import matplotlib.pyplot as plt
 
 # TODO: Multithreading
 
@@ -113,6 +114,11 @@ def calculate_task_element_metrics(items):
 
 	percentiles = np.percentile(items, [confidence_bounds[0], 25, 50, 75, confidence_bounds[1]])
 
+	#plt.figure()
+	#plt.violinplot(items, showmedians=True)
+	#plt.show()
+	#plt.savefig('foo.png')
+
 	return {
 		"min": float(np.min(items)),
 		"max": float(np.max(items)),
@@ -137,32 +143,26 @@ def calculate_task_throughput_metrics(task_metrics):
 		}
 	}
 
-def calculate_task_positional_metrics(positional_probs):
-	prob_counts = []
+def graph_task_positional(positional_probs, task_name, confidence_interval, start, finish, filename):
+	positional_probs=list(positional_probs.values())[start:(finish-start)]
+
 	prob_median = []
-	prob_lower_quartile = []
-	prob_upper_quartile = []
 	prob_lower_bound = []
 	prob_upper_bound = []
-	for prob_set in positional_probs.values():
-		percentiles = np.percentile(prob_set, [confidence_bounds[0], 25, 50, 75, confidence_bounds[1]])
-		prob_counts.append(len(prob_set))
+	for prob_set in positional_probs:
+		percentiles = np.percentile(prob_set, [(100.0-confidence_interval)/2, 50, confidence_interval+((100.0-confidence_interval)/2)])
 		prob_lower_bound.append(percentiles[0])
-		prob_lower_quartile.append(percentiles[1])
-		prob_median.append(percentiles[2])
-		prob_upper_quartile.append(percentiles[3])
-		prob_upper_bound.append(percentiles[4])
+		prob_median.append(percentiles[1])
+		prob_upper_bound.append(percentiles[2])
 
-	return {
-		"count": prob_counts,
-		"percentiles": {
-			str(confidence_bounds[0]): prob_lower_bound,
-			"25": prob_lower_quartile,
-			"50": prob_median,
-			"75": prob_upper_quartile,
-			str(confidence_bounds[1]): prob_upper_bound,
-		},
-	}
+	plt.figure()
+	plt.suptitle(task_name+" perplexity by token position (n="+str(len(positional_probs[len(positional_probs)-1]))+", "+str(confidence_interval)+"% CI)")
+	plt.xlabel("Token Position")
+	plt.ylabel("Perplexity")
+	plt.semilogy()
+	plt.plot(range(start, finish-start), prob_median)
+	plt.fill_between(range(start, finish-start), prob_lower_bound, prob_upper_bound, alpha=0.2)
+	plt.savefig(filename)
 
 def get_input_line_count(filename):
 	with open(filename) as file:
@@ -192,8 +192,8 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
-				#print("analyze_task", task_name)
-				for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_positional_metrics(task_positional_probs[task_name])).items():
+				graph_task_positional(task_positional_probs[task_name], task_name, 50, 16, 2048, "output/"+task_name+"-positional.png") # FIXME
+				for key, value in calculate_task_data_metrics(tasks[task_name], {}).items():
 					task_metrics[task_name][key] = value
 				task_positional_probs[task_name] = {}
 			elif task_name:
@@ -210,7 +210,7 @@ def process_input_data(filename):
 						task_positional_probs[task_name][i] = []
 					task_positional_probs[task_name][i].append(prob)
 
-	print("calculate_run_metrics")
+	print("calculate_run_analysis")
 	for key, value in task_metrics.items():
 		task_name = key
 		task_metrics[key]["started"] = task_metrics[key]["wallclock"]
@@ -221,8 +221,8 @@ def process_input_data(filename):
 			for key, value in calculate_task_throughput_metrics(task_metrics[key]).items():
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
-			#print("analyze_task", task_name)
-			for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_positional_metrics(task_positional_probs[task_name])).items():
+			graph_task_positional(task_positional_probs[task_name], task_name, 50, 16, 2048, "output/"+task_name+"-positional.png") # FIXME
+			for key, value in calculate_task_data_metrics(tasks[task_name], {}).items():
 				task_metrics[task_name][key] = value
 			task_positional_probs[task_name] = {}
 
