@@ -59,7 +59,7 @@ def calculate_item_metrics(token_logprobs):
 		probs
 	)
 
-def calculate_task_data_metrics(items, prob_metrics):
+def calculate_task_data_metrics(items):
 	byte_counts = []
 	word_counts = []
 	token_counts = []
@@ -108,7 +108,6 @@ def calculate_task_data_metrics(items, prob_metrics):
 				"bits_per_byte": calculate_task_element_metrics(bpbs),
 			}
 		},
-		#"positional_statistics": prob_metrics,
 	}
 
 def calculate_task_element_metrics(items):
@@ -172,7 +171,7 @@ def graph_task_positional_perplexity(positional_probs, task_name, confidence_int
 	prob_lower_bound = []
 	prob_upper_bound = []
 	for prob_set in positional_probs:
-		percentiles = np.percentile(prob_set, [(100.0-confidence_interval)/2, 80, confidence_interval+((100.0-confidence_interval)/2)])
+		percentiles = np.percentile(prob_set, [(100.0-confidence_interval)/2, 50, confidence_interval+((100.0-confidence_interval)/2)])
 		prob_lower_bound.append(max(percentiles[0], 1))
 		prob_median.append(max(percentiles[1], 1))
 		prob_upper_bound.append(max(percentiles[2], 1))
@@ -220,7 +219,7 @@ def process_input_data(filename):
 				task_name = value
 				task_metrics[value]["completed"] = True
 				graph_task_perplexity(tasks[task_name], task_name, 32, "output/"+task_name+"-perplexity.png")
-				graph_task_positional_perplexity(task_positional_probs[task_name], task_name, 80, "output/"+task_name+"-positional-perplexity.png") # FIXME
+				graph_task_positional_perplexity(task_positional_probs[task_name], task_name, 50, "output/"+task_name+"-positional-perplexity.png") # FIXME
 				for key, value in calculate_task_data_metrics(tasks[task_name], {}).items():
 					task_metrics[task_name][key] = value
 				task_positional_probs[task_name] = {}
