@@ -16,8 +16,11 @@ if not nltk_downloader.is_installed('punkt_tab'):
 parser = argparse.ArgumentParser()
 parser.add_argument('input_data', type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
+parser.add_argument('--confidence_interval', type=float, default=95.0)
 
 args = parser.parse_args()
+
+confidence_bounds = [(100.0 - args.confidence_interval)/2, args.confidence_interval+((100.0 - args.confidence_interval)/2)]
 
 def calculate_item_metrics(token_logprobs):
 	text = ""
@@ -34,6 +37,10 @@ def calculate_item_metrics(token_logprobs):
 
 	logprob_sum = np.sum(logprobs)
 
+	probs = []
+	for logprob in logprobs:
+		probs.append(math.exp(-logprob))
+
 	return (
 		{
 			"byte_count": byte_count,
@@ -44,20 +51,38 @@ def calculate_item_metrics(token_logprobs):
 			"token_perplexity": math.exp(-np.mean(logprobs)),
 			"bits_per_byte": -logprob_sum / max(byte_count, 1) * 1 / math.log(2),
 		},
-		logprobs
+		probs
     )
 
-def calculate_task_metrics(items, logprob_metrics, metadata):
+def calculate_task_data_metrics(items, prob_metrics):
 	# TODO: Calculate metrics
 
 	return {
 		"items": len(items)
 	}
 
-def calculate_task_logprob_metrics(positional_logprobs):
-	# TODO: Calculate metrics, add progress bar?
+def calculate_task_throughput_metrics(task_metrics):
+	# TODO: Calculate metrics
 
-    return {}
+	return {}
+
+def calculate_task_prob_metrics(positional_probs):
+	prob_counts = []
+	prob_means = []
+	prob_lower_bounds = []
+	prob_upper_bounds = []
+	for prob_set in positional_probs:
+		prob_counts.append(len(prob_set))
+		prob_means.append(math.exp(-np.mean(prob_set)))
+		prob_lower_bounds.append(math.exp(-np.percentile(prob_set, confidence_bounds[0])))
+		prob_upper_bounds.append(math.exp(-np.percentile(prob_set, confidence_bounds[1])))
+
+	return {
+		"count": prob_counts,
+		"mean": prob_means,
+		"lower_bound": prob_lower_bounds,
+		"upper_bound": prob_upper_bounds,
+	}
 
 def get_input_line_count(filename):
 	with open(filename) as file:
@@ -71,10 +96,9 @@ def process_input_data(filename):
 	metadata = {}
 	task_metrics = {}
 	tasks = {}
-	task_positional_logprobs = {}
-	task_logprob_metrics = {}
+	task_positional_probs = {}
 
-	for line in tqdm.tqdm(input_file, desc="analyze_items", total=line_count):
+	for line in tqdm.tqdm(input_file, desc="analyze_task", total=line_count):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
@@ -88,21 +112,22 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
-				task_logprob_metrics[value] = calculate_task_logprob_metrics(task_positional_logprobs[value])
-				task_positional_logprobs[value] = {}
+				task_positional_probs[value] = {}
+				for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_prob_metrics(task_positional_probs[value])).items():
+					task_metrics[task_name][key] = value
 			elif task_name:
 				task_metrics[task_name][key] = value
 			elif isinstance(value, list):
 				task_name = key
 				if task_name not in tasks:
 					tasks[task_name] = []
-					task_positional_logprobs[task_name] = {}
+					task_positional_probs[task_name] = {}
 				line_metrics = calculate_item_metrics(value)
 				tasks[task_name].append(line_metrics[0])
-				for i, logprob in enumerate(line_metrics[1]):
-					if i not in task_positional_logprobs[task_name]:
-						task_positional_logprobs[task_name][i] = []
-					task_positional_logprobs[task_name][i].append(logprob)
+				for i, prob in enumerate(line_metrics[1]):
+					if i not in task_positional_probs[task_name]:
+						task_positional_probs[task_name][i] = []
+					task_positional_probs[task_name][i].append(prob)
 
 	for key, value in task_metrics.items():
 		task_metrics[key]["started"] = task_metrics[key]["wallclock"]
@@ -110,17 +135,11 @@ def process_input_data(filename):
 		if "monotonic_ns" in task_metrics[key]:
 			task_metrics[key]["duration"] = task_metrics[key]["monotonic_ns"] / 1000000000.0
 			del task_metrics[key]["monotonic_ns"]
-
-	for key, value in tqdm.tqdm(tasks.items(), desc="analyze_tasks"):
-		task_name = key
-		task_logprob_metrics = {}
-		if task_name in task_logprob_metrics:
-			task_logprob_metrics = task_logprob_metrics[task_name]
-		elif task_name in task_positional_logprobs and len(task_positional_logprobs[task_name]) > 0:
-			task_logprob_metrics = calculate_task_logprob_metrics(task_positional_logprobs[task_name])
-			task_positional_logprobs[task_name] = {}
-		for key, value in calculate_task_metrics(value, task_logprob_metrics, task_metrics).items():
-			task_metrics[task_name][key] = value
+			for key, value in calculate_task_throughput_metrics(value):
+				task_metrics[task_name][key] = value
+		if not task_metrics[key]["completed"]:
+			for key, value in calculate_task_data_metrics(tasks[key], calculate_task_prob_metrics(task_positional_probs[key])).items():
+				task_metrics[task_name][key] = value
 
 	print(json.dumps(task_metrics, indent="\t"))
 
