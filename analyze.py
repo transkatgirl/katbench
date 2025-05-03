@@ -169,7 +169,7 @@ def graph_task_positional_perplexity(positional_probs, task_name, confidence_int
 	prob_upper_bound = []
 	for prob_set in positional_probs:
 		percentiles = np.percentile(prob_set, [(100.0-confidence_interval)/2, 80, confidence_interval+((100.0-confidence_interval)/2)])
-		prob_lower_bound.append(percentiles[0])
+		prob_lower_bound.append(math.max(percentiles[0], 1))
 		prob_median.append(percentiles[1])
 		prob_upper_bound.append(percentiles[2])
 
