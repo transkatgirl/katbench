@@ -8,6 +8,8 @@ import math
 import nltk
 import numpy as np
 
+# TODO: Multithreading
+
 nltk_downloader = nltk.downloader.Downloader()
 
 if not nltk_downloader.is_installed('punkt_tab'):
