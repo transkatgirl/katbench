@@ -57,7 +57,7 @@ async def _run_task_loop(payload_limit, client, prompt, truncate):
 
 @retry(wait=wait_random_exponential(multiplier=1,max=60), stop=stop_after_delay(args.retry_timeout))
 async def _run_task_request(client, prompt, truncate):
-    return await client.text_generation(prompt=prompt, stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
+	return await client.text_generation(prompt=prompt, stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
 
 def convert_output_format(output):
 	tokens = []
@@ -93,7 +93,7 @@ async def main():
 		output_file.write(json.dumps({"start_task": name, "wallclock": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
 		output_file.write("\n")
 		start = time.perf_counter_ns()
-		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, payload_limit, client, item[field], max_input) for item in dataset["dataset"]], desc=name):
+		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, payload_limit, client, item[field], max_input) for item in dataset["dataset"] if item[field]], desc=name):
 			output_file.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
 			output_file.write("\n")
 		output_file.write(json.dumps({"completed_task": name, "monotonic_ns": time.perf_counter_ns() - start}, separators=(',', ':')))
