@@ -7,25 +7,36 @@ import datetime
 import math
 import nltk
 import numpy as np
+import copy
 
 nltk.download('punkt_tab')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('input_data', type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
-parser.add_argument('--normalize_tokenizer', type=str)
+parser.add_argument('--calculate_slow_metrics', action='store_true')
 
 args = parser.parse_args()
 
-def calculate_item_metrics(token_logprobs):
+def calculate_item_metrics(token_logprobs, calculate_slow_metrics):
 	text = ""
 	logprobs = []
+	segments = []
 	for token in token_logprobs:
 		for key, value in token.items():
 			if value:
 				logprobs.append(value)
 				text += key
+				if calculate_slow_metrics:
+					segments.append((copy.copy(text), copy.copy(logprobs)))
 
+	segment_metrics = []
+	for segment in segments:
+		segment_metrics.append(_calculate_segment_metrics(segment[0], segment[1]))
+
+	return (_calculate_segment_metrics(text, logprobs), segment_metrics)
+
+def _calculate_segment_metrics(text, logprobs):
 	byte_count = len(text.encode("utf-8"))
 	word_count = len(nltk.tokenize.word_tokenize(text))
 	token_count = len(logprobs)
@@ -70,7 +81,7 @@ def process_input_data(filename):
 				if task_name not in tasks:
 					tasks[task_name] = []
 				#tasks[task_name].append(calculate_metrics(value))
-				print(calculate_item_metrics(value))
+				print(calculate_item_metrics(value, args.calculate_slow_metrics)[0])
 
 	input_file.close()
 
