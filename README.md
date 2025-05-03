@@ -14,28 +14,24 @@ you will need:
 
 performs dataset tokenization & logprob calculation using remote LLM server, saving results to disk
 
-```bash
-python bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN] [--payload_limit PAYLOAD_LIMIT] base_url
+```
+usage: bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN]
+                [--payload_limit PAYLOAD_LIMIT] [--request_timeout REQUEST_TIMEOUT] [--retry_timeout RETRY_TIMEOUT]
+                base_url
 ```
 
-note: if you plan on testing very long context lengths (>100k tokens), you will need to use the `--payload-limit 100000000` flag on the TGI server, and the `--payload_limit 100000000` flag on the `bench.py` script
+note: if you plan on testing very long context lengths (>100k tokens), you will need to use the `--payload-limit 100000000` flag on the TGI server, and the `--payload_limit 100000000 --request_timeout 7200` flag on the `bench.py` script
 
 ### collate.py
 
 combines multiple incomplete runs saved by `bench.py` into one output file, removing unfinished tasks and trimming corrupted JSON
 
-```bash
-python collate.py [-h] [--output_file OUTPUT_FILE] input_files [input_files ...]
+```
+usage: collate.py [-h] [--output_file OUTPUT_FILE] input_files [input_files ...]
 ```
 
 ### analyze.py
 
 analyzes data saved to disk by `bench.py` and calculates metrics
-
-WIP
-
-### compare.py
-
-analyzes multiple outputs from `analyze.py` and creates comparisons
 
 WIP

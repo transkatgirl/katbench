@@ -17,6 +17,8 @@ parser.add_argument('--task_file', type=str, default="tasks.json")
 parser.add_argument('--output_file', type=str, default="output-" + str(round(time.time())) + ".jsonl")
 parser.add_argument('--context_len', type=int)
 parser.add_argument('--payload_limit', type=int, default=2000000)
+parser.add_argument('--request_timeout', type=int, default=60*30)
+parser.add_argument('--retry_timeout', type=int, default=60*4)
 
 args = parser.parse_args()
 
@@ -53,7 +55,7 @@ async def _run_task_loop(payload_limit, client, prompt, truncate):
 	else:
 		return output.details.prefill
 
-@retry(wait=wait_random_exponential(multiplier=1,max=60), stop=stop_after_delay(120))
+@retry(wait=wait_random_exponential(multiplier=1,max=60), stop=stop_after_delay(args.retry_timeout))
 async def _run_task_request(client, prompt, truncate):
     return await client.text_generation(prompt=prompt, stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
 
@@ -68,7 +70,7 @@ async def main():
 	raw_tasks = load_raw_tasks(args.task_file)
 	tasks = hydrate_tasks(raw_tasks)
 
-	client = AsyncInferenceClient(base_url=args.base_url, api_key=args.api_key, model=args.model)
+	client = AsyncInferenceClient(base_url=args.base_url, api_key=args.api_key, model=args.model, timeout=args.request_timeout)
 
 	print("get_endpoint_info", args.base_url)
 	info = await client.get_endpoint_info()
