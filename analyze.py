@@ -151,6 +151,7 @@ def graph_task(task_name, items, prob_items):
 	graph_task_tokenization(items, task_name, 32, "output/"+task_name+"-tokenization.png")
 	graph_task_perplexity(items, task_name, 32, "output/"+task_name+"-perplexity.png")
 	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-length-perplexity.png")
+	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-tokenization-perplexity.png")
 	graph_task_positional_perplexity(prob_items, task_name, 50, "output/"+task_name+"-positional-perplexity.png")
 	# TODO: plot all charts to one image
 
@@ -205,6 +206,28 @@ def graph_task_length_perplexity(items, task_name, filename):
 		plt.scatter(lengths, perplexities, alpha=0.5)
 	else:
 		plt.scatter(lengths, perplexities, alpha=1)
+	plt.savefig(filename)
+	plt.close()
+
+def graph_task_tokenization_perplexity(items, task_name, filename):
+	bytes_per_token = []
+	perplexities = []
+	for item in items:
+		bytes_per_token.append(max(item["byte_count"] / item["token_count"], 1))
+		perplexities.append(max(item["token_perplexity"], 1))
+
+	plt.figure()
+	plt.suptitle(task_name+" perplexity by bytes per token (n="+str(len(perplexities))+")")
+	plt.xlabel("UTF-8 Bytes / Token")
+	plt.ylabel("Token Perplexity")
+	plt.semilogy()
+	plt.ylim([1, 1000])
+	if len(perplexities) > 1000:
+		plt.scatter(bytes_per_token, perplexities, alpha=0.25)
+	elif len(perplexities) > 100:
+		plt.scatter(bytes_per_token, perplexities, alpha=0.5)
+	else:
+		plt.scatter(bytes_per_token, perplexities, alpha=1)
 	plt.savefig(filename)
 	plt.close()
 
