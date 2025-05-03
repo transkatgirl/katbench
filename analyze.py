@@ -146,7 +146,7 @@ def calculate_task_throughput_metrics(task_metrics):
 def graph_task_perplexity(items, task_name, bins, filename):
 	perplexities = []
 	for item in items:
-		perplexities.append(item["token_perplexity"])
+		perplexities.append(max(item["token_perplexity"], 1))
 
 	plt.figure()
 	plt.suptitle(task_name+" perplexity (n="+str(len(perplexities))+")")
@@ -170,8 +170,8 @@ def graph_task_positional_perplexity(positional_probs, task_name, confidence_int
 	for prob_set in positional_probs:
 		percentiles = np.percentile(prob_set, [(100.0-confidence_interval)/2, 80, confidence_interval+((100.0-confidence_interval)/2)])
 		prob_lower_bound.append(max(percentiles[0], 1))
-		prob_median.append(percentiles[1])
-		prob_upper_bound.append(percentiles[2])
+		prob_median.append(max(percentiles[1], 1))
+		prob_upper_bound.append(max(percentiles[2], 1))
 
 	items = len(positional_probs)
 
