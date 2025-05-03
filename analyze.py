@@ -46,19 +46,40 @@ def calculate_item_metrics(token_logprobs):
 			"byte_count": byte_count,
 			"word_count": word_count,
 			"token_count": token_count,
-			"word_perplexity": math.exp(-logprob_sum / max(word_count, 1)),
 			"byte_perplexity": math.exp(-logprob_sum / max(byte_count, 1)),
+			"word_perplexity": math.exp(-logprob_sum / max(word_count, 1)),
 			"token_perplexity": math.exp(-np.mean(logprobs)),
 			"bits_per_byte": -logprob_sum / max(byte_count, 1) * 1 / math.log(2),
 		},
 		probs
-    )
+	)
 
 def calculate_task_data_metrics(items, prob_metrics):
+	byte_counts = []
+	word_counts = []
+	token_counts = []
+	byte_perplexities = []
+	word_perplexities = []
+	token_perplexities = []
+	bpbs = []
+	for item in items:
+		byte_counts.append(item["byte_count"])
+		word_counts.append(item["word_count"])
+		token_counts.append(item["token_count"])
+		byte_perplexities.append(item["byte_perplexity"])
+		word_perplexities.append(item["word_perplexity"])
+		token_perplexities.append(item["token_perplexity"])
+		bpbs.append(item["bits_per_byte"])
+
 	# TODO: Calculate metrics
 
 	return {
-		"items": len(items)
+		"size": {
+			"items": len(items),
+			"bytes": np.sum(byte_counts),
+			"words": np.sum(word_counts),
+			"tokens": np.sum(token_counts),
+		}
 	}
 
 def calculate_task_throughput_metrics(task_metrics):
@@ -98,7 +119,7 @@ def process_input_data(filename):
 	tasks = {}
 	task_positional_probs = {}
 
-	for line in tqdm.tqdm(input_file, desc="analyze_task", total=line_count):
+	for line in tqdm.tqdm(input_file, desc="analyze_file", total=line_count):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
@@ -112,6 +133,7 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
+				#print("analyze_task", task_name)
 				for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_positional_metrics(task_positional_probs[task_name])).items():
 					task_metrics[task_name][key] = value
 				task_positional_probs[task_name] = {}
@@ -129,6 +151,7 @@ def process_input_data(filename):
 						task_positional_probs[task_name][i] = []
 					task_positional_probs[task_name][i].append(prob)
 
+	print("calculate_run_metrics")
 	for key, value in task_metrics.items():
 		task_metrics[key]["started"] = task_metrics[key]["wallclock"]
 		del task_metrics[key]["wallclock"]
@@ -138,7 +161,8 @@ def process_input_data(filename):
 			for key, value in calculate_task_throughput_metrics(value):
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
-			for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_prob_metrics(task_positional_probs[task_name])).items():
+			#print("analyze_task", task_name)
+			for key, value in calculate_task_data_metrics(tasks[task_name], calculate_task_positional_metrics(task_positional_probs[task_name])).items():
 				task_metrics[task_name][key] = value
 			task_positional_probs[task_name] = {}
 
