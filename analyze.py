@@ -62,6 +62,9 @@ def calculate_task_data_metrics(items, prob_metrics):
 	word_perplexities = []
 	token_perplexities = []
 	bpbs = []
+	bytes_per_token = []
+	words_per_token = []
+	bytes_per_word = []
 	for item in items:
 		byte_counts.append(item["byte_count"])
 		word_counts.append(item["word_count"])
@@ -70,16 +73,47 @@ def calculate_task_data_metrics(items, prob_metrics):
 		word_perplexities.append(item["word_perplexity"])
 		token_perplexities.append(item["token_perplexity"])
 		bpbs.append(item["bits_per_byte"])
+		bytes_per_token.append(item["byte_count"] / item["token_count"])
+		words_per_token.append(item["word_count"] / item["token_count"])
+		bytes_per_word.append(item["byte_count"] / item["word_count"])
 
-	# TODO: Calculate metrics
+	# TODO: Calculate histograms
 
 	return {
 		"size": {
 			"items": len(items),
-			"bytes": np.sum(byte_counts),
-			"words": np.sum(word_counts),
-			"tokens": np.sum(token_counts),
-		}
+			"bytes": int(np.sum(byte_counts)),
+			"words": int(np.sum(word_counts)),
+			"tokens": int(np.sum(token_counts)),
+		},
+		"item_statistics": {
+			"sizes": {
+				"bytes": calculate_task_element_metrics(byte_counts),
+				"words": calculate_task_element_metrics(word_counts),
+				"tokens": calculate_task_element_metrics(token_counts),
+			},
+			"tokenization": {
+				"bytes_per_token": calculate_task_element_metrics(bytes_per_token),
+				"words_per_token": calculate_task_element_metrics(words_per_token),
+				"bytes_per_word": calculate_task_element_metrics(bytes_per_word),
+			},
+			"perplexities": {
+				"byte_perplexity": calculate_task_element_metrics(byte_perplexities),
+				"word_perplexity": calculate_task_element_metrics(word_perplexities),
+				"token_perplexity": calculate_task_element_metrics(token_perplexities),
+				"bits_per_byte": calculate_task_element_metrics(bpbs),
+			}
+		},
+		#"positional_statistics": prob_metrics,
+	}
+
+def calculate_task_element_metrics(items):
+    return {
+		"min": float(np.min(items)),
+		"max": float(np.max(items)),
+		"mean": float(np.mean(items)),
+		"median": float(np.median(items)),
+		"stdev": float(np.std(items)),
 	}
 
 def calculate_task_throughput_metrics(task_metrics):
