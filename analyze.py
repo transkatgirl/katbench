@@ -150,7 +150,9 @@ def calculate_task_throughput_metrics(task_metrics):
 def graph_task(task_name, items, prob_items):
 	graph_task_tokenization(items, task_name, 32, "output/"+task_name+"-tokenization.png")
 	graph_task_perplexity(items, task_name, 32, "output/"+task_name+"-perplexity.png")
+	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-length-perplexity.png")
 	graph_task_positional_perplexity(prob_items, task_name, 50, "output/"+task_name+"-positional-perplexity.png")
+	# TODO: plot all charts to one image
 
 def graph_task_tokenization(items, task_name, bins, filename):
 	bytes_per_token = []
@@ -181,6 +183,23 @@ def graph_task_perplexity(items, task_name, bins, filename):
 	plt.hist(perplexities, bins=logbins)
 
 	plt.xlim([1, 1000])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_task_length_perplexity(items, task_name, filename):
+	lengths = []
+	perplexities = []
+	for item in items:
+		lengths.append(item["token_count"])
+		perplexities.append(max(item["token_perplexity"], 1))
+
+	plt.figure()
+	plt.suptitle(task_name+" perplexity by length (n="+str(len(perplexities))+")")
+	plt.xlabel("Token Count")
+	plt.ylabel("Token Perplexity")
+	plt.loglog()
+	plt.ylim([1, 1000])
+	plt.scatter(lengths, perplexities, alpha=0.5)
 	plt.savefig(filename)
 	plt.close()
 
