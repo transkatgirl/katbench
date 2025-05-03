@@ -109,6 +109,8 @@ def calculate_task_data_metrics(items, prob_metrics):
 def calculate_task_element_metrics(items):
 	# TODO: Calculate histograms
 
+	# TODO: Optimize performance
+
     return {
 		"min": float(np.min(items)),
 		"max": float(np.max(items)),
@@ -134,6 +136,8 @@ def calculate_task_throughput_metrics(task_metrics):
 	}
 
 def calculate_task_positional_metrics(positional_probs):
+    # TODO: Optimize performance
+
 	prob_counts = []
 	prob_medians = []
 	prob_lower_quartile = []
