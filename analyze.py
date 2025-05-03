@@ -146,6 +146,26 @@ def calculate_task_throughput_metrics(task_metrics):
 		}
 	}
 
+
+def graph_task(task_name, items, prob_items):
+	graph_task_tokenization(items, task_name, 32, "output/"+task_name+"-tokenization.png")
+	graph_task_perplexity(items, task_name, 32, "output/"+task_name+"-perplexity.png")
+	graph_task_positional_perplexity(prob_items, task_name, 50, "output/"+task_name+"-positional-perplexity.png")
+
+def graph_task_tokenization(items, task_name, bins, filename):
+	bytes_per_token = []
+	for item in items:
+		bytes_per_token.append(max(item["byte_count"] / item["token_count"], 1))
+
+	plt.figure()
+	plt.suptitle(task_name+" bytes per token (n="+str(len(bytes_per_token))+")")
+	plt.xlabel("Bytes / Token")
+	plt.ylabel("Dataset Items")
+	plt.hist(bytes_per_token, bins=bins)
+	plt.xlim(xmin=1)
+	plt.savefig(filename)
+	plt.close()
+
 def graph_task_perplexity(items, task_name, bins, filename):
 	perplexities = []
 	for item in items:
@@ -218,9 +238,8 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
-				graph_task_perplexity(tasks[task_name], task_name, 32, "output/"+task_name+"-perplexity.png")
-				graph_task_positional_perplexity(task_positional_probs[task_name], task_name, 50, "output/"+task_name+"-positional-perplexity.png") # FIXME
-				for key, value in calculate_task_data_metrics(tasks[task_name], {}).items():
+				graph_task(task_name, tasks[task_name], task_positional_probs[task_name])
+				for key, value in calculate_task_data_metrics(tasks[task_name]).items():
 					task_metrics[task_name][key] = value
 				task_positional_probs[task_name] = {}
 			elif task_name:
@@ -248,9 +267,8 @@ def process_input_data(filename):
 			for key, value in calculate_task_throughput_metrics(task_metrics[key]).items():
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
-			graph_task_perplexity(tasks[task_name], task_name+"*", 32, "output/"+task_name+"-perplexity.png")
-			graph_task_positional_perplexity(task_positional_probs[task_name], task_name+"*", 50, "output/"+task_name+"-positional-perplexity.png") # FIXME
-			for key, value in calculate_task_data_metrics(tasks[task_name], {}).items():
+			graph_task(task_name, tasks[task_name], task_positional_probs[task_name])
+			for key, value in calculate_task_data_metrics(tasks[task_name]).items():
 				task_metrics[task_name][key] = value
 			task_positional_probs[task_name] = {}
 
