@@ -153,7 +153,12 @@ def graph_task(task_name, items, prob_items):
 	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-length-perplexity.png")
 	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-tokenization-perplexity.png")
 	graph_task_positional_perplexity(prob_items, task_name, 50, "output/"+task_name+"-positional-perplexity.png")
-	# TODO: plot all charts to one image
+	# TODO: plot all charts & important data to one image
+	# see: https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_hist.html#sphx-glr-gallery-lines-bars-and-markers-scatter-hist-py
+	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/align_labels_demo.html#sphx-glr-gallery-subplots-axes-and-figures-align-labels-demo-py
+	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/gridspec_multicolumn.html#sphx-glr-gallery-subplots-axes-and-figures-gridspec-multicolumn-py
+	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/gridspec_nested.html#sphx-glr-gallery-subplots-axes-and-figures-gridspec-nested-py
+	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplot2grid.html#sphx-glr-gallery-subplots-axes-and-figures-subplot2grid-py
 
 def graph_task_tokenization(items, task_name, bins, filename):
 	bytes_per_token = []
@@ -165,6 +170,7 @@ def graph_task_tokenization(items, task_name, bins, filename):
 	plt.xlabel("UTF-8 Bytes / Token")
 	plt.ylabel("Dataset Items")
 	plt.hist(bytes_per_token, bins=bins)
+	plt.axvline(np.median(bytes_per_token), color='k', linestyle='dashed')
 	plt.xlim(xmin=1)
 	plt.savefig(filename)
 	plt.close()
@@ -182,7 +188,7 @@ def graph_task_perplexity(items, task_name, bins, filename):
 	hist, bins = np.histogram(perplexities, bins=bins)
 	logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
 	plt.hist(perplexities, bins=logbins)
-
+	plt.axvline(np.median(perplexities), color='k', linestyle='dashed')
 	plt.xlim([1, 1000])
 	plt.savefig(filename)
 	plt.close()
@@ -327,6 +333,11 @@ def process_input_data(filename):
 
 process_input_data(args.input_data)
 
+# TODO: model vs. model comparisons
+
+# see: https://matplotlib.org/stable/gallery/statistics/violinplot.html#sphx-glr-gallery-statistics-violinplot-py
+# https://matplotlib.org/stable/gallery/statistics/histogram_bihistogram.html#sphx-glr-gallery-statistics-histogram-bihistogram-py
+# https://matplotlib.org/stable/gallery/statistics/histogram_multihist.html#sphx-glr-gallery-statistics-histogram-multihist-py
 
 # measurements to include in rewrite:
 # - perplexity by position
