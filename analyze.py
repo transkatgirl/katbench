@@ -199,7 +199,12 @@ def graph_task_length_perplexity(items, task_name, filename):
 	plt.ylabel("Token Perplexity")
 	plt.loglog()
 	plt.ylim([1, 1000])
-	plt.scatter(lengths, perplexities, alpha=0.5)
+	if len(perplexities) > 1000:
+		plt.scatter(lengths, perplexities, alpha=0.25)
+	elif len(perplexities) > 100:
+		plt.scatter(lengths, perplexities, alpha=0.5)
+	else:
+		plt.scatter(lengths, perplexities, alpha=1)
 	plt.savefig(filename)
 	plt.close()
 
@@ -225,7 +230,7 @@ def graph_task_positional_perplexity(positional_probs, task_name, confidence_int
 	plt.xlim([0, items])
 	plt.ylim([1, 1000])
 	plt.plot(range(0, items), prob_median)
-	plt.fill_between(range(0, items), prob_lower_bound, prob_upper_bound, alpha=0.2)
+	plt.fill_between(range(0, items), prob_lower_bound, prob_upper_bound, alpha=0.25)
 	plt.savefig(filename)
 	plt.close()
 
