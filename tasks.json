@@ -46,6 +46,34 @@
 		],
 		"split": "val+test"
 	},
+	"realtimedata:arxiv-2025-03": {
+		"hf_repo": "RealTimeData/arxiv_alltime",
+		"subsets": ["2025-03"],
+		"split": "train"
+	},
+	"realtimedata:bbc-2025-03": {
+		"hf_repo": "RealTimeData/bbc_news_alltime",
+		"subsets": ["2025-03"],
+		"split": "train",
+		"field": "content"
+	},
+	"realtimedata:code-2025-03": {
+		"hf_repo": "RealTimeData/code_alltime",
+		"subsets": ["2025-03"],
+		"split": "train",
+		"field": "code"
+	},
+	"realtimedata:math-2025-03": {
+		"hf_repo": "RealTimeData/math_alltime",
+		"subsets": ["2025-03"],
+		"split": "train",
+		"field": "verbolised"
+	},
+	"realtimedata:wikitext-2025-03": {
+		"hf_repo": "RealTimeData/wikitext_alltime",
+		"subsets": ["2025-03"],
+		"split": "train"
+	},
 	"culturax:eng": {
 		"hf_repo": "yiyic/culturaX_eng",
 		"subsets": [],
