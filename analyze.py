@@ -149,7 +149,7 @@ def graph_task_perplexity(items, task_name, bins, filename):
 		perplexities.append(item["token_perplexity"])
 
 	plt.figure()
-	plt.suptitle(task_name+" perplexity (n="+str(len(perplexities)))
+	plt.suptitle(task_name+" perplexity (n="+str(len(perplexities))+")")
 	plt.xlabel("Token Perplexity")
 	plt.ylabel("Count")
 	plt.semilogx()
