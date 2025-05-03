@@ -159,6 +159,7 @@ def graph_task(task_name, items, prob_items):
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/gridspec_multicolumn.html#sphx-glr-gallery-subplots-axes-and-figures-gridspec-multicolumn-py
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/gridspec_nested.html#sphx-glr-gallery-subplots-axes-and-figures-gridspec-nested-py
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplot2grid.html#sphx-glr-gallery-subplots-axes-and-figures-subplot2grid-py
+	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplots_demo.html
 
 def graph_task_tokenization(items, task_name, bins, filename):
 	bytes_per_token = []
@@ -336,6 +337,8 @@ process_input_data(args.input_data)
 # TODO: model vs. model comparisons
 
 # see: https://matplotlib.org/stable/gallery/statistics/violinplot.html#sphx-glr-gallery-statistics-violinplot-py
+# https://matplotlib.org/stable/plot_types/stats/violin.html#sphx-glr-plot-types-stats-violin-py
+# https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py
 # https://matplotlib.org/stable/gallery/statistics/histogram_bihistogram.html#sphx-glr-gallery-statistics-histogram-bihistogram-py
 # https://matplotlib.org/stable/gallery/statistics/histogram_multihist.html#sphx-glr-gallery-statistics-histogram-multihist-py
 
@@ -359,119 +362,3 @@ process_input_data(args.input_data)
 # create graphical plots, don't just output a handful of measurements
 # - make data distributions visible
 # - make statistical significance visible
-
-"""
-parser = argparse.ArgumentParser()
-parser.add_argument('bench_data', nargs="+", type=str)
-parser.add_argument('--data_output_file', type=str)
-parser.add_argument('--stats_output_file', type=str)
-parser.add_argument('--tokenizer', type=str, default="allenai/OLMo-2-0425-1B")
-
-args = parser.parse_args()
-
-tokenizer = Tokenizer.from_pretrained(args.tokenizer)
-
-nltk.download('punkt_tab')
-
-def calculate_metrics(token_logprobs):
-	token_count = 0
-	text = ""
-	logprob_sum = 0
-	for token in token_logprobs:
-		for key, value in token.items():
-			if value:
-				token_count += 1
-				text += key
-				logprob_sum += value
-	byte_count = len(text.encode("utf-8"))
-	word_count = len(nltk.tokenize.word_tokenize(text))
-
-	return {
-		"byte_count": byte_count,
-		"word_count": word_count,
-		"token_count": token_count,
-		"word_perplexity": math.exp(-logprob_sum / max(word_count, 1)),
-		"byte_perplexity": math.exp(-logprob_sum / max(byte_count, 1)),
-		"token_perplexity": math.exp(-logprob_sum / max(token_count, 1)),
-		"normalized_token_perplexity": math.exp(-logprob_sum / max(len(tokenizer.encode(text)), 1)),
-		"bits_per_byte": -logprob_sum / max(byte_count, 1) * 1 / math.log(2),
-	}
-
-def calculate_task_metrics(items):
-	task_items = {}
-
-	for item in items:
-		for key, value in item.items():
-			if key not in task_items:
-				task_items[key] = []
-			task_items[key].append(value)
-
-	metrics = {}
-
-	for key, value in task_items.items():
-		quartiles = numpy.percentile(value, [1, 5, 10, 25, 50, 75, 90, 95, 99])
-		histogram = numpy.histogram(value)
-
-		metrics[key] = {
-			"n": len(items),
-			"mean": float(numpy.mean(value)),
-			"std": float(numpy.std(value)),
-			"percentiles": {
-				"1": float(quartiles[0]),
-				"5": float(quartiles[1]),
-				"10": float(quartiles[2]),
-				"25": float(quartiles[3]),
-				"50": float(quartiles[4]),
-				"75": float(quartiles[5]),
-				"90": float(quartiles[6]),
-				"95": float(quartiles[7]),
-				"99": float(quartiles[8]),
-			}
-		}
-
-	return metrics
-
-for filename in args.bench_data:
-	file = open(filename)
-	metadata = {}
-	tasks = {}
-	task_data = {}
-
-	for line in file:
-		linedata = json.loads(line)
-		if len(metadata) == 0:
-			for key, value in linedata.items():
-				metadata[key] = value
-		task = None
-		is_task_end = False
-		for key, value in linedata.items():
-			if key == "start_task":
-				task = value
-				task_data[value] = {"total_tokens": 0, "total_bytes": 0, "completed": False}
-			elif key == "completed_task":
-				task = value
-				task_data[value]["completed"] = True
-			elif task:
-				task_data[task][key] = value
-			if isinstance(value, list):
-				task = key
-				if task not in tasks:
-					tasks[task] = []
-				metrics = calculate_metrics(value)
-				tasks[task].append(metrics)
-				task_data[task]["total_bytes"] += metrics["byte_count"]
-				task_data[task]["total_tokens"] += metrics["token_count"]
-
-	file.close()
-
-	if args.data_output_file:
-		with open(args.data_output_file, "x") as file:
-			json.dump({"metadata": metadata, "task_data": task_data, "tasks": tasks}, file, separators=(',', ':'))
-
-	summary = {}
-
-	for key, value in tasks.items():
-		summary[key] = calculate_task_metrics(value)
-
-	print(json.dumps(summary, indent="\t"))
-"""
