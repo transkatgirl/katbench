@@ -98,3 +98,11 @@ os.fsync(output_file)
 output_file.close()
 
 print("collated tasks = ", global_collated_task_list)
+
+incomplete_task_list = []
+
+for key, value in metadata["tasks"].items():
+	if key not in global_completed_tasks:
+		incomplete_task_list.append(key)
+
+print("incomplete tasks = ", incomplete_task_list)
