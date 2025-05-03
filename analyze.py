@@ -49,12 +49,14 @@ def get_input_line_count(filename):
 		return sum(1 for line in file)
 
 def process_input_data(filename):
+	print("process_input_file", filename)
 	line_count = get_input_line_count(filename)
 	input_file = open(filename)
 
 	metadata = {}
 	task_metrics = {}
 	tasks = {}
+	task_positional_logprobs = {}
 
 	for line in tqdm.tqdm(input_file, desc="analyze_lines", total=line_count):
 		line_data = json.loads(line)
@@ -70,15 +72,23 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
+				task_positional_logprobs[value] = {}
+				# TODO: Calculate metrics from task_positional_logprobs
 			elif task_name:
 				task_metrics[task_name][key] = value
 			elif isinstance(value, list):
 				task_name = key
 				if task_name not in tasks:
 					tasks[task_name] = []
-				#tasks[task_name].append(calculate_metrics(value)[0])
-				#print(calculate_item_metrics(value, args.stride)[0])
-				calculate_item_metrics(value) # FIXME
+					task_positional_logprobs[task_name] = {}
+				line_metrics = calculate_item_metrics(value)
+				tasks[task_name].append(line_metrics[0])
+				for i, logprob in enumerate(line_metrics[1]):
+					if i not in task_positional_logprobs[task_name]:
+						task_positional_logprobs[task_name][i] = []
+					task_positional_logprobs[task_name][i].append(logprob)
+
+	# TODO: Calculate metrics from tasks and task_metrics
 
 	input_file.close()
 
