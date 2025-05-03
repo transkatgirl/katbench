@@ -8,7 +8,10 @@ import math
 import nltk
 import numpy as np
 
-nltk.download('punkt_tab')
+nltk_downloader = nltk.downloader.Downloader()
+
+if not nltk_downloader.is_installed('punkt_tab'):
+	nltk_downloader.download('punkt_tab')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('input_data', type=str)
