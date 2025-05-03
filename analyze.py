@@ -24,32 +24,30 @@ confidence_bounds = [(100.0 - args.confidence_interval)/2, args.confidence_inter
 
 def calculate_item_metrics(token_logprobs):
 	text = ""
-	logprobs = []
+	probs = []
+	logprob_sum = 0
+	token_count = 0
 	for token in token_logprobs:
 		for key, value in token.items():
 			if value:
-				logprobs.append(value)
 				text += key
+				logprob_sum += value
+				probs.append(math.exp(-value))
+				token_count += 1
 
-	byte_count = len(text.encode("utf-8"))
-	word_count = len(nltk.tokenize.word_tokenize(text))
-	token_count = len(logprobs)
-
-	logprob_sum = np.sum(logprobs)
-
-	probs = []
-	for logprob in logprobs:
-		probs.append(math.exp(-logprob))
+	byte_count = max(len(text.encode("utf-8")), 1)
+	word_count = max(len(nltk.tokenize.word_tokenize(text)), 1)
+	token_count = max(token_count, 1)
 
 	return (
 		{
 			"byte_count": byte_count,
 			"word_count": word_count,
 			"token_count": token_count,
-			"byte_perplexity": math.exp(-logprob_sum / max(byte_count, 1)),
-			"word_perplexity": math.exp(-logprob_sum / max(word_count, 1)),
-			"token_perplexity": math.exp(-np.mean(logprobs)),
-			"bits_per_byte": -logprob_sum / max(byte_count, 1) * 1 / math.log(2),
+			"byte_perplexity": math.exp(-logprob_sum / byte_count),
+			"word_perplexity": math.exp(-logprob_sum / word_count),
+			"token_perplexity": math.exp(-logprob_sum / token_count),
+			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
 		},
 		probs
 	)
@@ -111,17 +109,19 @@ def calculate_task_element_metrics(items):
 
 	# TODO: Optimize performance
 
-    return {
+	percentiles = np.percentile(items, [confidence_bounds[0], 25, 50, 75, confidence_bounds[1]])
+
+	return {
 		"min": float(np.min(items)),
 		"max": float(np.max(items)),
 		"mean": float(np.mean(items)),
 		"stdev": float(np.std(items)),
 		"percentiles": {
-			str(confidence_bounds[0]): float(np.percentile(items, confidence_bounds[0])),
-			"25": float(np.percentile(items, 25)),
-			"50": float(np.median(items)),
-			"75": float(np.percentile(items, 75)),
-			str(confidence_bounds[1]): float(np.percentile(items, confidence_bounds[1])),
+			str(confidence_bounds[0]): percentiles[0],
+			"25": percentiles[1],
+			"50": percentiles[2],
+			"75": percentiles[3],
+			str(confidence_bounds[1]): percentiles[4],
 		},
 	}
 
@@ -136,28 +136,27 @@ def calculate_task_throughput_metrics(task_metrics):
 	}
 
 def calculate_task_positional_metrics(positional_probs):
-    # TODO: Optimize performance
-
 	prob_counts = []
-	prob_medians = []
+	prob_median = []
 	prob_lower_quartile = []
 	prob_upper_quartile = []
 	prob_lower_bound = []
 	prob_upper_bound = []
 	for prob_set in positional_probs.values():
+		percentiles = np.percentile(prob_set, [confidence_bounds[0], 25, 50, 75, confidence_bounds[1]])
 		prob_counts.append(len(prob_set))
-		prob_medians.append(np.median(prob_set))
-		prob_lower_quartile.append(np.percentile(prob_set, 25))
-		prob_upper_quartile.append(np.percentile(prob_set, 75))
-		prob_lower_bound.append(np.percentile(prob_set, confidence_bounds[0]))
-		prob_upper_bound.append(np.percentile(prob_set, confidence_bounds[1]))
+		prob_lower_bound.append(percentiles[0])
+		prob_lower_quartile.append(percentiles[1])
+		prob_median.append(percentiles[2])
+		prob_upper_quartile.append(percentiles[3])
+		prob_upper_bound.append(percentiles[4])
 
 	return {
 		"count": prob_counts,
 		"percentiles": {
 			str(confidence_bounds[0]): prob_lower_bound,
 			"25": prob_lower_quartile,
-			"50": prob_medians,
+			"50": prob_median,
 			"75": prob_upper_quartile,
 			str(confidence_bounds[1]): prob_upper_bound,
 		},
