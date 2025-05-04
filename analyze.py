@@ -7,10 +7,14 @@ import datetime
 import math
 import nltk
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # TODO: Multithreading
 
+sns.set_theme()
+mpl.rcParams['figure.dpi'] = 300
 nltk_downloader = nltk.downloader.Downloader()
 
 if not nltk_downloader.is_installed('punkt_tab'):
@@ -168,40 +172,37 @@ def graph_tasks(comparative_data):
 	# TODO: plot charts & important data to a smaller set of images containing more relevant info
 
 def graph_tasks_perplexity(comparative_data, filename): # FIXME
-	task_names = []
-	token_perplexity = []
-	quantiles = []
+	task_name = []
+	perplexity = []
 
 	for key, value in comparative_data.items():
-		task_names.append(key)
-		token_perplexity.append(value["token_perplexity"])
-		quantiles.append([0.25, 0.75])
+		for elem in value["token_perplexity"]:
+			task_name.append(key)
+			perplexity.append(elem)
 
-	plt.figure(figsize=[max(6.4, (2.4+(0.5*len(task_names)))), 4.8])
+	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.5*len(comparative_data.keys()))))])
 	plt.suptitle("perplexity by task")
-	plt.violinplot(token_perplexity, quantiles=quantiles, showmedians=True, showextrema=False)
-	plt.ylabel("Token Perplexity")
-	plt.semilogy()
-	plt.ylim([1, 1000])
-	plt.xticks(np.arange(1, len(task_names) + 1), task_names, rotation=45, ha='right', fontsize=6)
+	sns.violinplot(x=perplexity, y=task_name, log_scale=True)
+	plt.xlabel("Token Perplexity")
+	plt.xlim([1, 1000])
+	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
 
 def graph_tasks_tokenization(comparative_data, filename): # FIXME
-	task_names = []
+	task_name = []
 	bytes_per_token = []
-	quantiles = []
 
 	for key, value in comparative_data.items():
-		task_names.append(key)
-		bytes_per_token.append(value["bytes_per_token"])
-		quantiles.append([0.25, 0.75])
+		for elem in value["bytes_per_token"]:
+			task_name.append(key)
+			bytes_per_token.append(elem)
 
-	plt.figure(figsize=[max(6.4, (2.4+(0.5*len(task_names)))), 4.8])
+	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.5*len(comparative_data.keys()))))])
 	plt.suptitle("bytes per token by task")
-	plt.violinplot(bytes_per_token, showmedians=True, quantiles=quantiles)
-	plt.ylabel("UTF-8 Bytes / Token")
-	plt.xticks(np.arange(1, len(task_names) + 1), task_names, rotation=45, ha='right', fontsize=6)
+	sns.violinplot(x=bytes_per_token, y=task_name)
+	plt.xlabel("UTF-8 Bytes / Token")
+	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
 
