@@ -165,7 +165,6 @@ def graph_tasks(comparative_data):
 	graph_tasks_perplexity(comparative_data, "output/task-perplexity.png")
 	graph_tasks_tokenization(comparative_data, "output/task-tokenization.png")
 	graph_tasks_bpb(comparative_data, "output/task-bits-per-byte.png")
-	# TODO: scatter plots?
 
 def graph_tasks_perplexity(comparative_data, filename):
 	task_name = []
