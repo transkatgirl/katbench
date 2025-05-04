@@ -274,7 +274,7 @@ def graph_task_positional_perplexity(positional_probs, task_name, filename):
 
 	items = len(positional_probs)
 
-	plt.figure(figsize=[12.2, 4.8])
+	fig = plt.figure(figsize=[11.2, 4.8])
 	plt.suptitle(task_name+" perplexity by position ((i=1, n="+str(len(positional_probs[0]))+"), (i="+str(items)+", n="+str(len(positional_probs[items-1]))+"), 95% CI)")
 	plt.xlabel("Token Position")
 	plt.ylabel("Token Perplexity")
@@ -282,6 +282,7 @@ def graph_task_positional_perplexity(positional_probs, task_name, filename):
 	plt.loglog()
 	plt.xlim([1, items])
 	plt.ylim([1, 1000])
+	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
 
