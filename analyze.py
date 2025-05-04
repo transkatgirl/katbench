@@ -153,7 +153,7 @@ def graph_task(task_name, items, prob_items):
 	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-length-perplexity.png")
 	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-tokenization-perplexity.png")
 	graph_task_positional_perplexity(prob_items, task_name, 50, "output/"+task_name+"-positional-perplexity.png")
-	# TODO: plot all charts & important data to one image
+	# TODO: plot charts & important data to a smaller set of images containing more relevant info
 	# see: https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_hist.html#sphx-glr-gallery-lines-bars-and-markers-scatter-hist-py
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/align_labels_demo.html#sphx-glr-gallery-subplots-axes-and-figures-align-labels-demo-py
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/gridspec_multicolumn.html#sphx-glr-gallery-subplots-axes-and-figures-gridspec-multicolumn-py
