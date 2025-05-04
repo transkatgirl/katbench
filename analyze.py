@@ -308,7 +308,6 @@ def get_input_line_count(filename):
 		return sum(1 for line in file)
 
 def process_input_data(filename):
-	print("process_input_file", filename)
 	line_count = get_input_line_count(filename)
 	input_file = open(filename)
 
@@ -318,7 +317,7 @@ def process_input_data(filename):
 	task_comparative_data = {}
 	task_positional_probs = {}
 
-	for line in tqdm.tqdm(input_file, desc="analyze_file", total=line_count):
+	for line in tqdm.tqdm(input_file, desc=filename, total=line_count):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
@@ -355,7 +354,6 @@ def process_input_data(filename):
 
 	input_file.close()
 
-	print("calculate_run_analysis")
 	for key, value in task_metrics.items():
 		task_name = key
 		task_metrics[key]["started"] = task_metrics[key]["wallclock"]
