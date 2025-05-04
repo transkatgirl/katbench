@@ -5,9 +5,12 @@ import asyncio
 import tqdm
 import time
 import datetime
+import sys
 from datasets import load_dataset
 from huggingface_hub import AsyncInferenceClient
 from tenacity import retry, wait_random_exponential, stop_after_delay
+
+sys.setrecursionlimit(1500)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('base_url', type=str)
@@ -44,13 +47,13 @@ async def run_task(semaphore, payload_limit, client, prompt, truncate):
 	async with semaphore:
 		return await _run_task_loop(payload_limit, client, prompt, truncate)
 
-async def _run_task_loop(payload_limit, client, prompt, truncate):
+async def _run_task_loop(payload_limit, client, prompt, truncate, depth = 0):
 	output = await _run_task_request(client, prompt[:payload_limit], truncate)
 	characters = 0
 	for token in output.details.prefill[1:]:
 		characters += len(token.text)
-	if len(prompt) > characters:
-		split_output = await _run_task_loop(payload_limit, client, prompt[characters:], truncate)
+	if len(prompt) > characters and depth < 1000:
+		split_output = await _run_task_loop(payload_limit, client, prompt[characters:], truncate, depth + 1)
 		return [*output.details.prefill, *split_output]
 	else:
 		return output.details.prefill
