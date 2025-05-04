@@ -162,7 +162,7 @@ def graph_tasks(comparative_data):
 	graph_tasks_perplexity(comparative_data, "output/task-perplexity.png")
 	graph_tasks_tokenization(comparative_data, "output/task-tokenization.png")
 
-def graph_tasks_perplexity(comparative_data, filename): # FIXME
+def graph_tasks_perplexity(comparative_data, filename):
 	task_name = []
 	perplexity = []
 
@@ -180,7 +180,7 @@ def graph_tasks_perplexity(comparative_data, filename): # FIXME
 	plt.savefig(filename)
 	plt.close()
 
-def graph_tasks_tokenization(comparative_data, filename): # FIXME
+def graph_tasks_tokenization(comparative_data, filename):
 	task_name = []
 	bytes_per_token = []
 
