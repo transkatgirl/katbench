@@ -153,9 +153,9 @@ def calculate_task_throughput_metrics(task_metrics):
 
 def graph_task(task_name, items, prob_items):
 	graph_task_perplexity(items, task_name, "output/"+task_name+"-perplexity.png")
-	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-length-perplexity.png")
-	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-tokenization-perplexity.png")
-	graph_task_positional_perplexity(prob_items, task_name, "output/"+task_name+"-positional-perplexity.png")
+	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-perplexity-length.png")
+	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-perplexity-tokenization.png")
+	graph_task_positional_perplexity(prob_items, task_name, "output/"+task_name+"-perplexity-positional.png")
 	# TODO: migrate to FacetGrid
 
 def graph_tasks(comparative_data):
