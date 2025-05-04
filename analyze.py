@@ -243,10 +243,15 @@ def graph_task_bpb(items, task_name, filename):
 		perplexities.append(max(item["token_perplexity"], 1))
 
 	g = sns.JointGrid(x=perplexities, y=bpbs, xlim=[1, 1000], ylim=[0, 3], height=9.6, ratio=3, marginal_ticks=True)
-	g.figure.suptitle(task_name+" perplexity by bits per byte (n="+str(len(perplexities))+")")
+	g.figure.suptitle(task_name+" perplexity by bits per byte (n="+str(len(perplexities))+", 95% CI)")
 	g.set_axis_labels("Token Perplexity", "Bits / Byte")
 	g.ax_joint.set_xscale('log')
-	g.plot_joint(sns.regplot, logx=True, ci=95)
+	if len(perplexities) > 1000:
+		g.plot_joint(sns.regplot, scatter_kws={"alpha": 0.25}, logx=True, ci=95)
+	elif len(perplexities) > 100:
+		g.plot_joint(sns.regplot, scatter_kws={"alpha": 0.5}, logx=True, ci=95)
+	else:
+		g.plot_joint(sns.regplot, logx=True, ci=95)
 	g.plot_marginals(sns.histplot, kde=True)
 	g.refline(x=np.median(perplexities), y=np.median(bpbs))
 	plt.savefig(filename)
