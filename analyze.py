@@ -173,7 +173,7 @@ def graph_tasks_perplexity(comparative_data, filename): # FIXME
 			task_name.append(key)
 			perplexity.append(elem)
 
-	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.6*len(comparative_data.keys()))))])
+	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+len(comparative_data.keys())))])
 	plt.suptitle("perplexity by task")
 	plt.xlabel("Token Perplexity")
 	sns.violinplot(x=perplexity, y=task_name, log_scale=True)
@@ -191,7 +191,7 @@ def graph_tasks_tokenization(comparative_data, filename): # FIXME
 			task_name.append(key)
 			bytes_per_token.append(elem)
 
-	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.6*len(comparative_data.keys()))))])
+	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(comparative_data.keys())))])
 	plt.suptitle("bytes per token by task")
 	plt.xlabel("UTF-8 Bytes / Token")
 	sns.violinplot(x=bytes_per_token, y=task_name)
