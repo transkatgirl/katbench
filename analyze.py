@@ -346,6 +346,8 @@ def process_input_data(filename):
 						task_positional_probs[task_name][i] = []
 					task_positional_probs[task_name][i].append(prob)
 
+	input_file.close()
+
 	print("calculate_run_analysis")
 	for key, value in task_metrics.items():
 		task_name = key
@@ -364,14 +366,15 @@ def process_input_data(filename):
 			task_comparative_data[task_name] = task_calculated_outputs[1]
 			task_positional_probs[task_name] = {}
 
+	# TODO: CSV output, Handle incomplete runs correctly
+
 	graph_tasks(task_comparative_data)
 
-	# TODO: JSON output, CSV output
-	# TODO: Handle incomplete runs correctly
-
-	print(json.dumps(task_metrics, indent="\t"))
-
-	input_file.close()
+	if os.path.exists("output/metrics.json"):
+		os.remove("output/metrics.json")
+	output_file = open("output/metrics.json", "x")
+	json.dump(task_metrics, output_file, indent="\t")
+	output_file.close()
 
 process_input_data(args.input_data)
 
