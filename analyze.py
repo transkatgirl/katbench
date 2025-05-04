@@ -152,7 +152,7 @@ def calculate_task_throughput_metrics(task_metrics):
 
 
 def graph_task(task_name, items, prob_items):
-	graph_task_perplexity(items, task_name, 32, "output/"+task_name+"-perplexity.png")
+	graph_task_perplexity(items, task_name, "output/"+task_name+"-perplexity.png")
 	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-length-perplexity.png")
 	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-tokenization-perplexity.png")
 	graph_task_positional_perplexity(prob_items, task_name, "output/"+task_name+"-positional-perplexity.png")
@@ -199,7 +199,7 @@ def graph_tasks_tokenization(comparative_data, filename): # FIXME
 	plt.savefig(filename)
 	plt.close()
 
-def graph_task_perplexity(items, task_name, bins, filename):
+def graph_task_perplexity(items, task_name, filename):
 	perplexities = []
 	for item in items:
 		perplexities.append(max(item["token_perplexity"], 1))
@@ -222,7 +222,7 @@ def graph_task_length_perplexity(items, task_name, filename):
 		lengths.append(item["token_count"])
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	g = sns.JointGrid(x=lengths, y=perplexities, height=9.6, ratio=3, marginal_ticks=True)
+	g = sns.JointGrid(x=lengths, y=perplexities, ylim=[1, 1000], height=9.6, ratio=3, marginal_ticks=True)
 	g.figure.suptitle(task_name+" perplexity by length (n="+str(len(perplexities))+")")
 	g.set_axis_labels("Token Count", "Token Perplexity")
 	g.ax_joint.set_xscale('log')
@@ -235,7 +235,6 @@ def graph_task_length_perplexity(items, task_name, filename):
 		g.plot_joint(sns.scatterplot, alpha=1)
 	g.plot_marginals(sns.histplot, kde=True)
 	g.refline(x=np.median(lengths), y=np.median(perplexities))
-	plt.ylim([1, 1000])
 	g.savefig(filename)
 	plt.close()
 
@@ -246,7 +245,7 @@ def graph_task_tokenization_perplexity(items, task_name, filename):
 		bytes_per_token.append(max(item["byte_count"] / item["token_count"], 1))
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	g = sns.JointGrid(x=bytes_per_token, y=perplexities, height=9.6, ratio=3, marginal_ticks=True)
+	g = sns.JointGrid(x=bytes_per_token, y=perplexities, ylim=[1, 1000], height=9.6, ratio=3, marginal_ticks=True)
 	g.figure.suptitle(task_name+" perplexity by bytes per token (n="+str(len(perplexities))+")")
 	g.set_axis_labels("UTF-8 Bytes / Token", "Token Perplexity")
 	g.ax_joint.set_yscale('log')
@@ -258,7 +257,6 @@ def graph_task_tokenization_perplexity(items, task_name, filename):
 		g.plot_joint(sns.scatterplot, alpha=1)
 	g.plot_marginals(sns.histplot, kde=True)
 	g.refline(x=np.median(bytes_per_token), y=np.median(perplexities))
-	plt.ylim([1, 1000])
 	g.savefig(filename)
 	plt.close()
 
