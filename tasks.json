@@ -199,11 +199,5 @@
 		"hf_repo": "AlekseyKorshuk/erotic-books",
 		"subsets": [],
 		"split": "train"
-	},
-	"1k_stories": {
-		"hf_repo": "FareedKhan/1k_stories_100_genre",
-		"subsets": [],
-		"split": "train",
-		"field": "story"
 	}
 }
