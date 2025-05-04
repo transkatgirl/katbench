@@ -32,7 +32,7 @@ confidence_bounds = [(100.0 - args.confidence_interval)/2, args.confidence_inter
 def calculate_item_metrics(token_logprobs):
 	text = ""
 	probs = []
-	logprob_sum = 0
+	logprob_sum = 0.0
 	token_count = 0
 	wrapped = False
 	for token in token_logprobs:
@@ -55,9 +55,9 @@ def calculate_item_metrics(token_logprobs):
 			"byte_count": byte_count,
 			"word_count": word_count,
 			"token_count": token_count,
-			"byte_perplexity": math.exp(-logprob_sum / byte_count),
-			"word_perplexity": math.exp(-logprob_sum / word_count),
-			"token_perplexity": math.exp(-logprob_sum / token_count),
+			"byte_perplexity": np.exp(-logprob_sum / byte_count),
+			"word_perplexity": np.exp(-logprob_sum / word_count),
+			"token_perplexity": np.exp(-logprob_sum / token_count),
 			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
 		},
 		probs
