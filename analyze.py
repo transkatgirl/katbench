@@ -180,7 +180,7 @@ def graph_tasks_perplexity(comparative_data, filename): # FIXME
 			task_name.append(key)
 			perplexity.append(elem)
 
-	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.5*len(comparative_data.keys()))))])
+	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.6*len(comparative_data.keys()))))])
 	plt.suptitle("perplexity by task")
 	sns.violinplot(x=perplexity, y=task_name, log_scale=True)
 	plt.xlabel("Token Perplexity")
@@ -198,7 +198,7 @@ def graph_tasks_tokenization(comparative_data, filename): # FIXME
 			task_name.append(key)
 			bytes_per_token.append(elem)
 
-	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.5*len(comparative_data.keys()))))])
+	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.6*len(comparative_data.keys()))))])
 	plt.suptitle("bytes per token by task")
 	sns.violinplot(x=bytes_per_token, y=task_name)
 	plt.xlabel("UTF-8 Bytes / Token")
@@ -226,16 +226,13 @@ def graph_task_perplexity(items, task_name, bins, filename):
 	for item in items:
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	plt.figure()
+	fig = plt.figure()
 	plt.suptitle(task_name+" perplexity (n="+str(len(perplexities))+")")
 	plt.xlabel("Token Perplexity")
 	plt.ylabel("Dataset Items")
-	plt.semilogx()
-	hist, bins = np.histogram(perplexities, bins=bins)
-	logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
-	plt.hist(perplexities, bins=logbins)
-	plt.axvline(np.median(perplexities), color='k', linestyle='dashed')
+	sns.histplot(perplexities, kde=True, log_scale=True)
 	plt.xlim([1, 1000])
+	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
 
