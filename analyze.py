@@ -182,8 +182,8 @@ def graph_tasks_perplexity(comparative_data, filename): # FIXME
 
 	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.6*len(comparative_data.keys()))))])
 	plt.suptitle("perplexity by task")
-	sns.violinplot(x=perplexity, y=task_name, log_scale=True)
 	plt.xlabel("Token Perplexity")
+	sns.violinplot(x=perplexity, y=task_name, log_scale=True)
 	plt.xlim([1, 1000])
 	fig.tight_layout()
 	plt.savefig(filename)
@@ -200,8 +200,8 @@ def graph_tasks_tokenization(comparative_data, filename): # FIXME
 
 	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(0.6*len(comparative_data.keys()))))])
 	plt.suptitle("bytes per token by task")
-	sns.violinplot(x=bytes_per_token, y=task_name)
 	plt.xlabel("UTF-8 Bytes / Token")
+	sns.violinplot(x=bytes_per_token, y=task_name)
 	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
@@ -231,6 +231,7 @@ def graph_task_perplexity(items, task_name, bins, filename):
 	plt.xlabel("Token Perplexity")
 	plt.ylabel("Dataset Items")
 	sns.histplot(perplexities, kde=True, log_scale=True)
+	plt.axvline(np.median(perplexities), color='.5', linestyle='--')
 	plt.xlim([1, 1000])
 	fig.tight_layout()
 	plt.savefig(filename)
@@ -243,19 +244,21 @@ def graph_task_length_perplexity(items, task_name, filename):
 		lengths.append(item["token_count"])
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	plt.figure()
-	plt.suptitle(task_name+" perplexity by length (n="+str(len(perplexities))+")")
-	plt.xlabel("Token Count")
-	plt.ylabel("Token Perplexity")
-	plt.loglog()
-	plt.ylim([1, 1000])
+	g = sns.JointGrid(x=lengths, y=perplexities, marginal_ticks=True)
+	g.figure.suptitle(task_name+" perplexity by length (n="+str(len(perplexities))+")")
+	g.set_axis_labels("Token Count", "Token Perplexity")
+	g.ax_joint.set_xscale('log')
+	g.ax_joint.set_yscale('log')
 	if len(perplexities) > 1000:
-		plt.scatter(lengths, perplexities, alpha=0.25)
+		g.plot_joint(sns.scatterplot, alpha=0.25)
 	elif len(perplexities) > 100:
-		plt.scatter(lengths, perplexities, alpha=0.5)
+		g.plot_joint(sns.scatterplot, alpha=0.5)
 	else:
-		plt.scatter(lengths, perplexities, alpha=1)
-	plt.savefig(filename)
+		g.plot_joint(sns.scatterplot, alpha=1)
+	g.plot_marginals(sns.histplot, kde=True)
+	g.refline(x=np.median(lengths), y=np.median(perplexities))
+	plt.ylim([1, 1000])
+	g.savefig(filename)
 	plt.close()
 
 def graph_task_tokenization_perplexity(items, task_name, filename):
