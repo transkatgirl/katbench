@@ -163,6 +163,7 @@ def graph_task(task_name, items, prob_items):
 
 def graph_tasks(comparative_data):
 	graph_tasks_perplexity(comparative_data, "output/task-perplexity.png")
+	graph_tasks_tokenization(comparative_data, "output/task-tokenization.png")
 	# TODO: add more chart types (dataset token length, dataset bytes per token)
 	# TODO: plot charts & important data to a smaller set of images containing more relevant info
 
@@ -174,14 +175,31 @@ def graph_tasks_perplexity(comparative_data, filename): # FIXME
 		task_names.append(key)
 		token_perplexity.append(value["token_perplexity"])
 
-	plt.figure(figsize=[max(6.4, (2.4+(0.5*len(task_names)))), 7.2])
+	plt.figure(figsize=[max(9.6, (2.4+(0.5*len(task_names)))), 9.6])
+	plt.suptitle("perplexity by task")
 	plt.violinplot(token_perplexity, showmedians=True, showextrema=False)
+	plt.ylabel("Token Perplexity")
 	plt.semilogy()
-	plt.ylim([1, 10000])
+	plt.ylim([1, 1000])
 	plt.xticks(np.arange(1, len(task_names) + 1), task_names, rotation=45, ha='right')
 	plt.savefig(filename)
 	plt.close()
 
+def graph_tasks_tokenization(comparative_data, filename): # FIXME
+	task_names = []
+	bytes_per_token = []
+
+	for key, value in comparative_data.items():
+		task_names.append(key)
+		bytes_per_token.append(value["bytes_per_token"])
+
+	plt.figure(figsize=[max(9.6, (2.4+(0.5*len(task_names)))), 9.6])
+	plt.suptitle("bytes per token by task")
+	plt.violinplot(bytes_per_token, showmedians=True, showextrema=False)
+	plt.ylabel("UTF-8 Bytes / Token")
+	plt.xticks(np.arange(1, len(task_names) + 1), task_names, rotation=45, ha='right')
+	plt.savefig(filename)
+	plt.close()
 
 def graph_task_tokenization(items, task_name, bins, filename):
 	bytes_per_token = []
