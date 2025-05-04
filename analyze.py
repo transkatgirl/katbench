@@ -23,11 +23,8 @@ if not nltk_downloader.is_installed('punkt_tab'):
 parser = argparse.ArgumentParser()
 parser.add_argument('input_data', type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
-parser.add_argument('--confidence_interval', type=float, default=95.0)
 
 args = parser.parse_args()
-
-confidence_bounds = [(100.0 - args.confidence_interval)/2, args.confidence_interval+((100.0 - args.confidence_interval)/2)]
 
 def calculate_item_metrics(token_logprobs):
 	text = ""
@@ -124,7 +121,7 @@ def calculate_task_data_metrics(items):
 	)
 
 def calculate_task_element_metrics(items):
-	percentiles = np.percentile(items, [confidence_bounds[0], 25, 50, 75, confidence_bounds[1]])
+	percentiles = np.percentile(items, [5, 25, 50, 75, 95])
 
 	return {
 		"min": float(np.min(items)),
@@ -132,11 +129,11 @@ def calculate_task_element_metrics(items):
 		"mean": float(np.mean(items)),
 		"stdev": float(np.std(items)),
 		"percentiles": {
-			str(confidence_bounds[0]): percentiles[0],
+			"5": percentiles[0],
 			"25": percentiles[1],
 			"50": percentiles[2],
 			"75": percentiles[3],
-			str(confidence_bounds[1]): percentiles[4],
+			"95": percentiles[4],
 		},
 	}
 
@@ -161,6 +158,8 @@ def graph_task(task_name, items, prob_items):
 def graph_tasks(comparative_data):
 	graph_tasks_perplexity(comparative_data, "output/task-perplexity.png")
 	graph_tasks_tokenization(comparative_data, "output/task-tokenization.png")
+	graph_tasks_bpb(comparative_data, "output/task-bits-per-byte.png")
+	# TODO: scatter plots?
 
 def graph_tasks_perplexity(comparative_data, filename):
 	task_name = []
@@ -195,6 +194,23 @@ def graph_tasks_tokenization(comparative_data, filename):
 	plt.xlabel("UTF-8 Bytes / Token")
 	sns.violinplot(x=bytes_per_token, y=task_name, density_norm="width")
 	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_bpb(comparative_data, filename):
+	task_name = []
+	bits_per_byte = []
+
+	for key, value in comparative_data.items():
+		for elem in value["bits_per_byte"]:
+			task_name.append(key)
+			bits_per_byte.append(elem)
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
+	plt.suptitle("bits per byte by task")
+	plt.xlabel("Bits / Byte")
+	sns.violinplot(x=bits_per_byte, y=task_name, density_norm="width")
+	plt.xlim([0, 5])
 	plt.savefig(filename)
 	plt.close()
 
@@ -350,7 +366,7 @@ def process_input_data(filename):
 
 	graph_tasks(task_comparative_data)
 
-	# TODO: JSON output and task vs. task comparisons
+	# TODO: JSON output, CSV output
 	# TODO: Handle incomplete runs correctly
 
 	print(json.dumps(task_metrics, indent="\t"))
