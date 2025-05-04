@@ -147,6 +147,12 @@ def calculate_task_throughput_metrics(task_metrics):
 		}
 	}
 
+def write_data(data, name):
+	if os.path.exists("output/"+name+".json"):
+		os.remove("output/"+name+".json")
+	output_file = open("output/"+name+".json", "x")
+	json.dump(data, output_file, indent="\t")
+	output_file.close()
 
 def graph_task(task_name, items, prob_items):
 	graph_task_perplexity(items, task_name, "output/"+task_name+"-perplexity.png")
@@ -316,6 +322,7 @@ def process_input_data(filename):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
+			write_data(metadata, "metadata")
 			continue
 
 		task_name = None
@@ -369,12 +376,7 @@ def process_input_data(filename):
 	# TODO: CSV output, Handle incomplete runs correctly
 
 	graph_tasks(task_comparative_data)
-
-	if os.path.exists("output/metrics.json"):
-		os.remove("output/metrics.json")
-	output_file = open("output/metrics.json", "x")
-	json.dump(task_metrics, output_file, indent="\t")
-	output_file.close()
+	write_data(task_metrics, "metrics")
 
 process_input_data(args.input_data)
 
