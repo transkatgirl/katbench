@@ -210,7 +210,7 @@ def graph_tasks_bpb(comparative_data, filename):
 	plt.suptitle("bits per byte by task")
 	plt.xlabel("Bits / Byte")
 	sns.violinplot(x=bits_per_byte, y=task_name, density_norm="width")
-	plt.xlim([0, 5])
+	plt.xlim([0, 4])
 	plt.savefig(filename)
 	plt.close()
 
