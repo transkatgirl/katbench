@@ -83,32 +83,35 @@ def calculate_task_data_metrics(items):
 			words_per_token.append(item["word_count"] / item["token_count"])
 			bytes_per_word.append(item["byte_count"] / item["word_count"])
 
-	return {
-		"size": {
-			"items": len(items),
-			"bytes": int(np.sum(byte_counts)),
-			"words": int(np.sum(word_counts)),
-			"tokens": int(np.sum(token_counts)),
-		},
-		"item_statistics": {
-			"sizes": {
-				"bytes": calculate_task_element_metrics(byte_counts),
-				"words": calculate_task_element_metrics(word_counts),
-				"tokens": calculate_task_element_metrics(token_counts),
+	return (
+		{
+			"size": {
+				"items": len(items),
+				"bytes": int(np.sum(byte_counts)),
+				"words": int(np.sum(word_counts)),
+				"tokens": int(np.sum(token_counts)),
 			},
-			"tokenization": {
-				"bytes_per_token": calculate_task_element_metrics(bytes_per_token),
-				"words_per_token": calculate_task_element_metrics(words_per_token),
-				"bytes_per_word": calculate_task_element_metrics(bytes_per_word),
+			"item_statistics": {
+				"sizes": {
+					"bytes": calculate_task_element_metrics(byte_counts),
+					"words": calculate_task_element_metrics(word_counts),
+					"tokens": calculate_task_element_metrics(token_counts),
+				},
+				"tokenization": {
+					"bytes_per_token": calculate_task_element_metrics(bytes_per_token),
+					"words_per_token": calculate_task_element_metrics(words_per_token),
+					"bytes_per_word": calculate_task_element_metrics(bytes_per_word),
+				},
+				"perplexities": {
+					"byte_perplexity": calculate_task_element_metrics(byte_perplexities),
+					"word_perplexity": calculate_task_element_metrics(word_perplexities),
+					"token_perplexity": calculate_task_element_metrics(token_perplexities),
+					"bits_per_byte": calculate_task_element_metrics(bpbs),
+				}
 			},
-			"perplexities": {
-				"byte_perplexity": calculate_task_element_metrics(byte_perplexities),
-				"word_perplexity": calculate_task_element_metrics(word_perplexities),
-				"token_perplexity": calculate_task_element_metrics(token_perplexities),
-				"bits_per_byte": calculate_task_element_metrics(bpbs),
-			}
 		},
-	}
+		bpbs
+	)
 
 def calculate_task_element_metrics(items):
 	# TODO: Calculate histograms
@@ -276,6 +279,7 @@ def process_input_data(filename):
 	metadata = {}
 	task_metrics = {}
 	tasks = {}
+	task_bits_per_byte = {}
 	task_positional_probs = {}
 
 	for line in tqdm.tqdm(input_file, desc="analyze_file", total=line_count):
@@ -293,8 +297,10 @@ def process_input_data(filename):
 				task_name = value
 				task_metrics[value]["completed"] = True
 				graph_task(task_name, tasks[task_name], task_positional_probs[task_name])
-				for key, value in calculate_task_data_metrics(tasks[task_name]).items():
+				task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
+				for key, value in task_calculated_outputs[0].items():
 					task_metrics[task_name][key] = value
+				task_bits_per_byte[task_name] = task_calculated_outputs[1]
 				task_positional_probs[task_name] = {}
 			elif task_name:
 				task_metrics[task_name][key] = value
@@ -322,11 +328,13 @@ def process_input_data(filename):
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
 			graph_task(task_name, tasks[task_name], task_positional_probs[task_name])
-			for key, value in calculate_task_data_metrics(tasks[task_name]).items():
+			task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
+			for key, value in task_calculated_outputs[0].items():
 				task_metrics[task_name][key] = value
+			task_bits_per_byte[task_name] = task_calculated_outputs[1]
 			task_positional_probs[task_name] = {}
 
-	# TODO: Output and graphing
+	# TODO: JSON output and task vs. task comparisons
 
 	print(json.dumps(task_metrics, indent="\t"))
 
