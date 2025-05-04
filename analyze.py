@@ -222,7 +222,7 @@ def graph_task_length_perplexity(items, task_name, filename):
 		lengths.append(item["token_count"])
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	g = sns.JointGrid(x=lengths, y=perplexities, height=8.8, marginal_ticks=True)
+	g = sns.JointGrid(x=lengths, y=perplexities, height=9.6, ratio=3, marginal_ticks=True)
 	g.figure.suptitle(task_name+" perplexity by length (n="+str(len(perplexities))+")")
 	g.set_axis_labels("Token Count", "Token Perplexity")
 	g.ax_joint.set_xscale('log')
@@ -246,7 +246,7 @@ def graph_task_tokenization_perplexity(items, task_name, filename):
 		bytes_per_token.append(max(item["byte_count"] / item["token_count"], 1))
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	g = sns.JointGrid(x=bytes_per_token, y=perplexities, height=8.8, marginal_ticks=True)
+	g = sns.JointGrid(x=bytes_per_token, y=perplexities, height=9.6, ratio=3, marginal_ticks=True)
 	g.figure.suptitle(task_name+" perplexity by bytes per token (n="+str(len(perplexities))+")")
 	g.set_axis_labels("UTF-8 Bytes / Token", "Token Perplexity")
 	g.ax_joint.set_yscale('log')
