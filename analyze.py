@@ -110,20 +110,17 @@ def calculate_task_data_metrics(items):
 				}
 			},
 		},
-		bpbs
+		{
+			"token_perplexity": token_perplexities,
+			"bits_per_byte": bpbs,
+			"byte_counts": byte_counts,
+			"token_counts": token_counts,
+			"bytes_per_token": bytes_per_token,
+		}
 	)
 
 def calculate_task_element_metrics(items):
-	# TODO: Calculate histograms
-
-	# TODO: Optimize performance
-
 	percentiles = np.percentile(items, [confidence_bounds[0], 25, 50, 75, confidence_bounds[1]])
-
-	#plt.figure()
-	#plt.violinplot(items, showmedians=True)
-	#plt.show()
-	#plt.savefig('foo.png')
 
 	return {
 		"min": float(np.min(items)),
@@ -155,7 +152,7 @@ def graph_task(task_name, items, prob_items):
 	graph_task_perplexity(items, task_name, 32, "output/"+task_name+"-perplexity.png")
 	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-length-perplexity.png")
 	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-tokenization-perplexity.png")
-	graph_task_positional_perplexity(prob_items, task_name, 50, "output/"+task_name+"-positional-perplexity.png")
+	graph_task_positional_perplexity(prob_items, task_name, 60, "output/"+task_name+"-positional-perplexity.png")
 	# TODO: plot charts & important data to a smaller set of images containing more relevant info
 	# see: https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_hist.html#sphx-glr-gallery-lines-bars-and-markers-scatter-hist-py
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/align_labels_demo.html#sphx-glr-gallery-subplots-axes-and-figures-align-labels-demo-py
@@ -163,6 +160,28 @@ def graph_task(task_name, items, prob_items):
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/gridspec_nested.html#sphx-glr-gallery-subplots-axes-and-figures-gridspec-nested-py
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplot2grid.html#sphx-glr-gallery-subplots-axes-and-figures-subplot2grid-py
 	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplots_demo.html
+
+def graph_tasks(comparative_data):
+	graph_tasks_perplexity(comparative_data, "output/task-perplexity.png")
+	# TODO: add more chart types (dataset token length, dataset bytes per token)
+	# TODO: plot charts & important data to a smaller set of images containing more relevant info
+
+def graph_tasks_perplexity(comparative_data, filename): # FIXME
+	task_names = []
+	token_perplexity = []
+
+	for key, value in comparative_data.items():
+		task_names.append(key)
+		token_perplexity.append(value["token_perplexity"])
+
+	plt.figure(figsize=[max(6.4, (2.4+(0.5*len(task_names)))), 7.2])
+	plt.violinplot(token_perplexity, showmedians=True, showextrema=False)
+	plt.semilogy()
+	plt.ylim([1, 10000])
+	plt.xticks(np.arange(1, len(task_names) + 1), task_names, rotation=45, ha='right')
+	plt.savefig(filename)
+	plt.close()
+
 
 def graph_task_tokenization(items, task_name, bins, filename):
 	bytes_per_token = []
@@ -255,12 +274,12 @@ def graph_task_positional_perplexity(positional_probs, task_name, confidence_int
 
 	items = len(positional_probs)
 
-	plt.figure()
-	plt.suptitle(task_name+" perplexity by position (n="+str(len(positional_probs[items-1]))+", "+str(confidence_interval)+"% CI)")
+	plt.figure(figsize=[12.2, 4.8])
+	plt.suptitle(task_name+" perplexity by position ((i=0, n="+str(len(positional_probs[0]))+"), (i="+str(items-1)+", n="+str(len(positional_probs[items-1]))+"), "+str(confidence_interval)+"% percentile CI)")
 	plt.xlabel("Token Position")
 	plt.ylabel("Token Perplexity")
-	plt.semilogy()
-	plt.xlim([0, items])
+	plt.loglog()
+	plt.xlim([1, items])
 	plt.ylim([1, 1000])
 	plt.plot(range(0, items), prob_median)
 	plt.fill_between(range(0, items), prob_lower_bound, prob_upper_bound, alpha=0.25)
@@ -279,7 +298,7 @@ def process_input_data(filename):
 	metadata = {}
 	task_metrics = {}
 	tasks = {}
-	task_bits_per_byte = {}
+	task_comparative_data = {}
 	task_positional_probs = {}
 
 	for line in tqdm.tqdm(input_file, desc="analyze_file", total=line_count):
@@ -300,7 +319,7 @@ def process_input_data(filename):
 				task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 				for key, value in task_calculated_outputs[0].items():
 					task_metrics[task_name][key] = value
-				task_bits_per_byte[task_name] = task_calculated_outputs[1]
+				task_comparative_data[task_name] = task_calculated_outputs[1]
 				task_positional_probs[task_name] = {}
 			elif task_name:
 				task_metrics[task_name][key] = value
@@ -331,8 +350,10 @@ def process_input_data(filename):
 			task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 			for key, value in task_calculated_outputs[0].items():
 				task_metrics[task_name][key] = value
-			task_bits_per_byte[task_name] = task_calculated_outputs[1]
+			task_comparative_data[task_name] = task_calculated_outputs[1]
 			task_positional_probs[task_name] = {}
+
+	graph_tasks(task_comparative_data)
 
 	# TODO: JSON output and task vs. task comparisons
 
