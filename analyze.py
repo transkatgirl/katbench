@@ -170,14 +170,16 @@ def graph_tasks(comparative_data):
 def graph_tasks_perplexity(comparative_data, filename): # FIXME
 	task_names = []
 	token_perplexity = []
+	quantiles = []
 
 	for key, value in comparative_data.items():
 		task_names.append(key)
 		token_perplexity.append(value["token_perplexity"])
+		quantiles.append([0.25, 0.75])
 
 	plt.figure(figsize=[max(6.4, (2.4+(0.5*len(task_names)))), 4.8])
 	plt.suptitle("perplexity by task")
-	plt.violinplot(token_perplexity, showmedians=True, quantiles=[0.25, 0.75], showextrema=False)
+	plt.violinplot(token_perplexity, quantiles=quantiles, showmedians=True, showextrema=False)
 	plt.ylabel("Token Perplexity")
 	plt.semilogy()
 	plt.ylim([1, 1000])
@@ -188,14 +190,16 @@ def graph_tasks_perplexity(comparative_data, filename): # FIXME
 def graph_tasks_tokenization(comparative_data, filename): # FIXME
 	task_names = []
 	bytes_per_token = []
+	quantiles = []
 
 	for key, value in comparative_data.items():
 		task_names.append(key)
 		bytes_per_token.append(value["bytes_per_token"])
+		quantiles.append([0.25, 0.75])
 
 	plt.figure(figsize=[max(6.4, (2.4+(0.5*len(task_names)))), 4.8])
 	plt.suptitle("bytes per token by task")
-	plt.violinplot(bytes_per_token, showmedians=True, quantiles=[0.25, 0.75])
+	plt.violinplot(bytes_per_token, showmedians=True, quantiles=quantiles)
 	plt.ylabel("UTF-8 Bytes / Token")
 	plt.xticks(np.arange(1, len(task_names) + 1), task_names, rotation=45, ha='right', fontsize=6)
 	plt.savefig(filename)
