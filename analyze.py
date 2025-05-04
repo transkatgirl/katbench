@@ -152,18 +152,11 @@ def calculate_task_throughput_metrics(task_metrics):
 
 
 def graph_task(task_name, items, prob_items):
-	graph_task_tokenization(items, task_name, 32, "output/"+task_name+"-tokenization.png")
 	graph_task_perplexity(items, task_name, 32, "output/"+task_name+"-perplexity.png")
 	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-length-perplexity.png")
 	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-tokenization-perplexity.png")
-	graph_task_positional_perplexity(prob_items, task_name, 80, "output/"+task_name+"-positional-perplexity.png")
-	# TODO: plot charts & important data to a smaller set of images containing more relevant info
-	# see: https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_hist.html#sphx-glr-gallery-lines-bars-and-markers-scatter-hist-py
-	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/align_labels_demo.html#sphx-glr-gallery-subplots-axes-and-figures-align-labels-demo-py
-	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/gridspec_multicolumn.html#sphx-glr-gallery-subplots-axes-and-figures-gridspec-multicolumn-py
-	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/gridspec_nested.html#sphx-glr-gallery-subplots-axes-and-figures-gridspec-nested-py
-	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplot2grid.html#sphx-glr-gallery-subplots-axes-and-figures-subplot2grid-py
-	# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplots_demo.html
+	graph_task_positional_perplexity(prob_items, task_name, "output/"+task_name+"-positional-perplexity.png")
+	# TODO: migrate to FacetGrid
 
 def graph_tasks(comparative_data):
 	graph_tasks_perplexity(comparative_data, "output/task-perplexity.png")
@@ -206,21 +199,6 @@ def graph_tasks_tokenization(comparative_data, filename): # FIXME
 	plt.savefig(filename)
 	plt.close()
 
-def graph_task_tokenization(items, task_name, bins, filename):
-	bytes_per_token = []
-	for item in items:
-		bytes_per_token.append(max(item["byte_count"] / item["token_count"], 1))
-
-	plt.figure()
-	plt.suptitle(task_name+" bytes per token (n="+str(len(bytes_per_token))+")")
-	plt.xlabel("UTF-8 Bytes / Token")
-	plt.ylabel("Dataset Items")
-	plt.hist(bytes_per_token, bins=bins)
-	plt.axvline(np.median(bytes_per_token), color='k', linestyle='dashed')
-	plt.xlim(xmin=1)
-	plt.savefig(filename)
-	plt.close()
-
 def graph_task_perplexity(items, task_name, bins, filename):
 	perplexities = []
 	for item in items:
@@ -244,7 +222,7 @@ def graph_task_length_perplexity(items, task_name, filename):
 		lengths.append(item["token_count"])
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	g = sns.JointGrid(x=lengths, y=perplexities, marginal_ticks=True)
+	g = sns.JointGrid(x=lengths, y=perplexities, height=8.8, marginal_ticks=True)
 	g.figure.suptitle(task_name+" perplexity by length (n="+str(len(perplexities))+")")
 	g.set_axis_labels("Token Count", "Token Perplexity")
 	g.ax_joint.set_xscale('log')
@@ -268,44 +246,42 @@ def graph_task_tokenization_perplexity(items, task_name, filename):
 		bytes_per_token.append(max(item["byte_count"] / item["token_count"], 1))
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	plt.figure()
-	plt.suptitle(task_name+" perplexity by bytes per token (n="+str(len(perplexities))+")")
-	plt.xlabel("UTF-8 Bytes / Token")
-	plt.ylabel("Token Perplexity")
-	plt.semilogy()
-	plt.ylim([1, 1000])
+	g = sns.JointGrid(x=bytes_per_token, y=perplexities, height=8.8, marginal_ticks=True)
+	g.figure.suptitle(task_name+" perplexity by bytes per token (n="+str(len(perplexities))+")")
+	g.set_axis_labels("UTF-8 Bytes / Token", "Token Perplexity")
+	g.ax_joint.set_yscale('log')
 	if len(perplexities) > 1000:
-		plt.scatter(bytes_per_token, perplexities, alpha=0.25)
+		g.plot_joint(sns.scatterplot, alpha=0.25)
 	elif len(perplexities) > 100:
-		plt.scatter(bytes_per_token, perplexities, alpha=0.5)
+		g.plot_joint(sns.scatterplot, alpha=0.5)
 	else:
-		plt.scatter(bytes_per_token, perplexities, alpha=1)
-	plt.savefig(filename)
+		g.plot_joint(sns.scatterplot, alpha=1)
+	g.plot_marginals(sns.histplot, kde=True)
+	g.refline(x=np.median(bytes_per_token), y=np.median(perplexities))
+	plt.ylim([1, 1000])
+	g.savefig(filename)
 	plt.close()
 
-def graph_task_positional_perplexity(positional_probs, task_name, confidence_interval, filename):
+def graph_task_positional_perplexity(positional_probs, task_name, filename):
 	positional_probs=list(positional_probs.values())
 
-	prob_median = []
-	prob_lower_bound = []
-	prob_upper_bound = []
-	for prob_set in positional_probs:
-		percentiles = np.percentile(prob_set, [(100.0-confidence_interval)/2, 50, confidence_interval+((100.0-confidence_interval)/2)])
-		prob_lower_bound.append(max(percentiles[0], 1))
-		prob_median.append(max(percentiles[1], 1))
-		prob_upper_bound.append(max(percentiles[2], 1))
+	prob_position = []
+	prob_value = []
+	for pos, prob_set in enumerate(positional_probs, start=1):
+		for prob in prob_set:
+			prob_position.append(pos)
+			prob_value.append(prob)
 
 	items = len(positional_probs)
 
 	plt.figure(figsize=[12.2, 4.8])
-	plt.suptitle(task_name+" perplexity by position ((i=1, n="+str(len(positional_probs[0]))+"), (i="+str(items)+", n="+str(len(positional_probs[items-1]))+"), "+str(confidence_interval)+"% percentile CI)")
+	plt.suptitle(task_name+" perplexity by position ((i=1, n="+str(len(positional_probs[0]))+"), (i="+str(items)+", n="+str(len(positional_probs[items-1]))+"), 95% CI)")
 	plt.xlabel("Token Position")
 	plt.ylabel("Token Perplexity")
+	sns.lineplot(x=prob_position, y=prob_value, errorbar=("ci", 95), estimator="median", seed=0)
 	plt.loglog()
 	plt.xlim([1, items])
 	plt.ylim([1, 1000])
-	plt.plot(range(1, items+1), prob_median)
-	plt.fill_between(range(1, items+1), prob_lower_bound, prob_upper_bound, alpha=0.25)
 	plt.savefig(filename)
 	plt.close()
 
