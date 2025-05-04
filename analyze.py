@@ -161,8 +161,6 @@ def graph_task(task_name, items, prob_items):
 def graph_tasks(comparative_data):
 	graph_tasks_perplexity(comparative_data, "output/task-perplexity.png")
 	graph_tasks_tokenization(comparative_data, "output/task-tokenization.png")
-	# TODO: add more chart types (dataset token length, dataset bytes per token)
-	# TODO: plot charts & important data to a smaller set of images containing more relevant info
 
 def graph_tasks_perplexity(comparative_data, filename): # FIXME
 	task_name = []
