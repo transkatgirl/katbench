@@ -354,6 +354,7 @@ def process_input_data(filename):
 	graph_tasks(task_comparative_data)
 
 	# TODO: JSON output and task vs. task comparisons
+	# TODO: Handle incomplete runs correctly
 
 	print(json.dumps(task_metrics, indent="\t"))
 
