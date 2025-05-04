@@ -171,12 +171,11 @@ def graph_tasks_perplexity(comparative_data, filename):
 			task_name.append(key)
 			perplexity.append(elem)
 
-	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(1.2*len(comparative_data.keys()))))])
-	sns.violinplot(x=perplexity, y=task_name, width=0.9, log_scale=True)
+	plt.figure(layout="constrained", figsize=[11.2, max(6.4, (2.4+(1.5*len(comparative_data.keys()))))])
 	plt.suptitle("perplexity by task")
 	plt.xlabel("Token Perplexity")
+	sns.violinplot(x=perplexity, y=task_name, width=0.9, log_scale=True)
 	plt.xlim([1, 1000])
-	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
 
@@ -191,12 +190,11 @@ def graph_tasks_tokenization(comparative_data, filename):
 			bytes_per_token.append(elem)
 		maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
 
-	fig = plt.figure(figsize=[9.6, max(6.4, (2.4+(1.2*len(comparative_data.keys()))))])
-	sns.violinplot(x=bytes_per_token, y=task_name, width=0.9, cut=0)
+	plt.figure(layout="constrained", figsize=[11.2, max(6.4, (2.4+(1.5*len(comparative_data.keys()))))])
 	plt.suptitle("bytes per token by task")
 	plt.xlabel("UTF-8 Bytes / Token")
+	sns.violinplot(x=bytes_per_token, y=task_name, width=0.9)
 	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
-	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
 
@@ -205,14 +203,13 @@ def graph_task_perplexity(items, task_name, filename):
 	for item in items:
 		perplexities.append(max(item["token_perplexity"], 1))
 
-	fig = plt.figure()
+	plt.figure(layout="tight")
 	plt.suptitle(task_name+" perplexity (n="+str(len(perplexities))+")")
 	plt.xlabel("Token Perplexity")
 	plt.ylabel("Dataset Items")
 	sns.histplot(perplexities, kde=True, log_scale=True)
 	plt.axvline(np.median(perplexities), color='.5', linestyle='--')
 	plt.xlim([1, 1000])
-	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
 
@@ -273,7 +270,7 @@ def graph_task_positional_perplexity(positional_probs, task_name, filename):
 
 	items = len(positional_probs)
 
-	fig = plt.figure(figsize=[11.2, 4.8])
+	plt.figure(layout="tight", figsize=[11.2, 4.8])
 	plt.suptitle(task_name+" perplexity by position ((i=1, n="+str(len(positional_probs[0]))+"), (i="+str(items)+", n="+str(len(positional_probs[items-1]))+"), 95% CI)")
 	plt.xlabel("Token Position")
 	plt.ylabel("Token Perplexity")
@@ -281,7 +278,6 @@ def graph_task_positional_perplexity(positional_probs, task_name, filename):
 	plt.loglog()
 	plt.xlim([1, items])
 	plt.ylim([1, 1000])
-	fig.tight_layout()
 	plt.savefig(filename)
 	plt.close()
 
