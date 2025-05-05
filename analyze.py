@@ -176,19 +176,19 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 	graph_task_positional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-positional.png"))
 
 def graph_tasks(output_prefix, comparative_data, model_name):
-	graph_tasks_perplexity(comparative_data, model_name, os.path.join(output_prefix, "perplexity.png"))
-	graph_tasks_tokenization(comparative_data, model_name, os.path.join(output_prefix, "tokenization.png"))
-	graph_tasks_bpb(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte.png"))
+	graph_tasks_perplexity(comparative_data, model_name, os.path.join(output_prefix, "perplexity-dist.png"))
+	graph_tasks_tokenization(comparative_data, model_name, os.path.join(output_prefix, "tokenization-dist.png"))
+	graph_tasks_bpb(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-dist.png"))
+
+	# TODO: Add central tendency graphing
 
 def graph_model_comparison(output_prefix, comparative_data):
-	graph_tasks_models_tokenization(comparative_data, os.path.join(output_prefix, "task-tokenization.png"))
-	graph_tasks_models_bpb(comparative_data, os.path.join(output_prefix, "task-bits-per-byte.png"))
+	graph_tasks_models_tokenization_dist(comparative_data, os.path.join(output_prefix, "task-tokenization-dist.png"))
+	graph_tasks_models_tokenization_tend(comparative_data, os.path.join(output_prefix, "task-tokenization-tend.png"))
+	graph_tasks_models_bpb_dist(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-dist.png"))
+	graph_tasks_models_bpb_tend(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-tend.png"))
 
-    # TODO: overall comparisons
-    # see: https://seaborn.pydata.org/generated/seaborn.displot.html#seaborn.displot
-    # need to ignore task data not shared by all models
-
-def graph_tasks_models_tokenization(comparative_data, filename):
+def graph_tasks_models_tokenization_dist(comparative_data, filename):
 	task_name = []
 	model_name = []
 	bytes_per_token = []
@@ -212,7 +212,7 @@ def graph_tasks_models_tokenization(comparative_data, filename):
 	plt.savefig(filename)
 	plt.close()
 
-def graph_tasks_models_bpb(comparative_data, filename):
+def graph_tasks_models_bpb_dist(comparative_data, filename):
 	task_name = []
 	model_name = []
 	bits_per_byte = []
@@ -230,6 +230,53 @@ def graph_tasks_models_bpb(comparative_data, filename):
 	plt.suptitle("bits per byte by task + model")
 	plt.xlabel("Bits / Byte")
 	sns.violinplot(x=bits_per_byte, y=task_name, hue=model_name, density_norm="width")
+	plt.xlim([0, 3])
+	plt.savefig(filename)
+	plt.close()
+
+
+def graph_tasks_models_tokenization_tend(comparative_data, filename):
+	task_name = []
+	model_name = []
+	bytes_per_token = []
+	maximum_bytes_per_token = []
+	items = 0
+
+	for model, data in comparative_data.items():
+		for key, value in data.items():
+			items += 1
+			for elem in value["bytes_per_token"]:
+				task_name.append(key)
+				model_name.append(model)
+				bytes_per_token.append(elem)
+			maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
+	plt.suptitle("bytes per token by task + model")
+	plt.xlabel("UTF-8 Bytes / Token")
+	sns.barplot(x=bytes_per_token, y=task_name, hue=model_name, errorbar=("ci", 95), estimator="median")
+	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_models_bpb_tend(comparative_data, filename):
+	task_name = []
+	model_name = []
+	bits_per_byte = []
+	items = 0
+
+	for model, data in comparative_data.items():
+		for key, value in data.items():
+			items += 1
+			for elem in value["bits_per_byte"]:
+				task_name.append(key)
+				model_name.append(model)
+				bits_per_byte.append(elem)
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
+	plt.suptitle("bits per byte by task + model")
+	plt.xlabel("Bits / Byte")
+	sns.barplot(x=bits_per_byte, y=task_name, hue=model_name, errorbar=("ci", 95), estimator="median")
 	plt.xlim([0, 3])
 	plt.savefig(filename)
 	plt.close()
