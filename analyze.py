@@ -433,28 +433,13 @@ process_input_data(args.input_data)
 
 # TODO: model vs. model comparisons
 
-# see: https://matplotlib.org/stable/gallery/statistics/violinplot.html#sphx-glr-gallery-statistics-violinplot-py
-# https://matplotlib.org/stable/plot_types/stats/violin.html#sphx-glr-plot-types-stats-violin-py
-# https://matplotlib.org/stable/gallery/statistics/customized_violin.html#sphx-glr-gallery-statistics-customized-violin-py
-# https://matplotlib.org/stable/gallery/statistics/histogram_bihistogram.html#sphx-glr-gallery-statistics-histogram-bihistogram-py
-# https://matplotlib.org/stable/gallery/statistics/histogram_multihist.html#sphx-glr-gallery-statistics-histogram-multihist-py
+# measurements to include:
+# - tokens per second by task
 
-# measurements to include in rewrite:
-# - perplexity by position
-# - perplexity / bits per byte by input length
-# - perplexity / bits per byte by task
-# - tokens/bytes per second by input length
-# - tokens/bytes per second by task
-# - bytes/token by task
-# - words/token by task
-
-# - perplexity / bits per byte by model
-# - perplexity / bits per byte by task + model
-# - perplexity by position + model
-# - bytes/token by model
+# - average bits per byte by model
+# - bits per byte by task + model
+# - average bytes/token by model
 # - bytes/token by task + model
-# - words/token by model
-# - words/token by task + model
 
 # create graphical plots, don't just output a handful of measurements
 # - make data distributions visible

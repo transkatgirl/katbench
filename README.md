@@ -32,6 +32,6 @@ usage: collate.py [-h] [--output_file OUTPUT_FILE] input_files [input_files ...]
 
 ### analyze.py
 
-analyzes data saved to disk by `bench.py` and calculates metrics
+analyzes data saved to disk by `bench.py` and generates data analyses
 
 WIP
