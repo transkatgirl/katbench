@@ -12,7 +12,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# TODO: Multithreading
+# TODO: Multithreading, CSV output
 
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
@@ -178,6 +178,58 @@ def graph_tasks(output_prefix, comparative_data, model_name):
 	graph_tasks_perplexity(comparative_data, model_name, os.path.join(output_prefix, "perplexity.png"))
 	graph_tasks_tokenization(comparative_data, model_name, os.path.join(output_prefix, "tokenization.png"))
 	graph_tasks_bpb(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte.png"))
+
+def graph_model_comparison(output_prefix, comparative_data):
+	graph_tasks_models_tokenization(comparative_data, os.path.join(output_prefix, "task-tokenization.png"))
+	graph_tasks_models_bpb(comparative_data, os.path.join(output_prefix, "task-bits-per-byte.png"))
+
+    # TODO: overall comparisons
+
+def graph_tasks_models_tokenization(comparative_data, filename):
+	task_name = []
+	model_name = []
+	bytes_per_token = []
+	maximum_bytes_per_token = []
+	items = 0
+
+	for model, data in comparative_data.items():
+		for key, value in data.items():
+			items += 1
+			for elem in value["bytes_per_token"]:
+				task_name.append(key)
+				model_name.append(model)
+				bytes_per_token.append(elem)
+			maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
+	plt.suptitle("bytes per token by task + model")
+	plt.xlabel("UTF-8 Bytes / Token")
+	sns.violinplot(x=bytes_per_token, y=task_name, hue=model_name, density_norm="width")
+	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_models_bpb(comparative_data, filename):
+	task_name = []
+	model_name = []
+	bits_per_byte = []
+	items = 0
+
+	for model, data in comparative_data.items():
+		for key, value in data.items():
+			items += 1
+			for elem in value["bits_per_byte"]:
+				task_name.append(key)
+				model_name.append(model)
+				bits_per_byte.append(elem)
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
+	plt.suptitle("bits per byte by task + model")
+	plt.xlabel("Bits / Byte")
+	sns.violinplot(x=bits_per_byte, y=task_name, hue=model_name, density_norm="width")
+	plt.xlim([0, 3])
+	plt.savefig(filename)
+	plt.close()
 
 def graph_tasks_perplexity(comparative_data, model_name, filename):
 	task_name = []
@@ -428,15 +480,13 @@ def process_input_data(filename):
 			task_comparative_data[model_name][task_name+"*"] = task_calculated_outputs[1]
 			task_positional_probs[task_name] = {}
 
-	# TODO: CSV output
-
 	graph_tasks(output_prefix, task_comparative_data[model_name], model_name)
 	write_json(task_metrics, os.path.join(output_prefix, "metrics.json"))
 
 for filename in args.input_files:
 	process_input_data(filename)
 
-# TODO: model vs. model comparisons
+graph_model_comparison(args.output_dir, task_comparative_data)
 
 # measurements to include:
 # - average bits per byte by model
