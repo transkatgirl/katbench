@@ -176,11 +176,12 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 	graph_task_positional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-positional.png"))
 
 def graph_tasks(output_prefix, comparative_data, model_name):
-	graph_tasks_perplexity(comparative_data, model_name, os.path.join(output_prefix, "perplexity-dist.png"))
-	graph_tasks_tokenization(comparative_data, model_name, os.path.join(output_prefix, "tokenization-dist.png"))
-	graph_tasks_bpb(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-dist.png"))
-
-	# TODO: Add central tendency graphing
+	graph_tasks_perplexity_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity-dist.png"))
+	graph_tasks_perplexity_tend(comparative_data, model_name, os.path.join(output_prefix, "perplexity-tend.png"))
+	graph_tasks_tokenization_dist(comparative_data, model_name, os.path.join(output_prefix, "tokenization-dist.png"))
+	graph_tasks_tokenization_tend(comparative_data, model_name, os.path.join(output_prefix, "tokenization-tend.png"))
+	graph_tasks_bpb_dist(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-dist.png"))
+	graph_tasks_bpb_tend(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-tend.png"))
 
 def graph_model_comparison(output_prefix, comparative_data):
 	graph_tasks_models_tokenization_dist(comparative_data, os.path.join(output_prefix, "task-tokenization-dist.png"))
@@ -281,7 +282,7 @@ def graph_tasks_models_bpb_tend(comparative_data, filename):
 	plt.savefig(filename)
 	plt.close()
 
-def graph_tasks_perplexity(comparative_data, model_name, filename):
+def graph_tasks_perplexity_dist(comparative_data, model_name, filename):
 	task_name = []
 	perplexity = []
 
@@ -298,7 +299,7 @@ def graph_tasks_perplexity(comparative_data, model_name, filename):
 	plt.savefig(filename)
 	plt.close()
 
-def graph_tasks_tokenization(comparative_data, model_name, filename):
+def graph_tasks_tokenization_dist(comparative_data, model_name, filename):
 	task_name = []
 	bytes_per_token = []
 	maximum_bytes_per_token = []
@@ -317,7 +318,7 @@ def graph_tasks_tokenization(comparative_data, model_name, filename):
 	plt.savefig(filename)
 	plt.close()
 
-def graph_tasks_bpb(comparative_data, model_name, filename):
+def graph_tasks_bpb_dist(comparative_data, model_name, filename):
 	task_name = []
 	bits_per_byte = []
 
@@ -330,6 +331,59 @@ def graph_tasks_bpb(comparative_data, model_name, filename):
 	plt.suptitle(model_name+" bits per byte by task")
 	plt.xlabel("Bits / Byte")
 	sns.violinplot(x=bits_per_byte, y=task_name, density_norm="width")
+	plt.xlim([0, 3])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_perplexity_tend(comparative_data, model_name, filename):
+	task_name = []
+	perplexity = []
+
+	for key, value in comparative_data.items():
+		for elem in value["token_perplexity"]:
+			task_name.append(key)
+			perplexity.append(elem)
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
+	plt.suptitle(model_name+" median perplexity by task (95% CI)")
+	plt.xlabel("Token Perplexity")
+	sns.barplot(x=perplexity, y=task_name, log_scale=True, estimator="median", errorbar=("ci", 95))
+	plt.xlim([1, 1000])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_tokenization_tend(comparative_data, model_name, filename):
+	task_name = []
+	bytes_per_token = []
+	maximum_bytes_per_token = []
+
+	for key, value in comparative_data.items():
+		for elem in value["bytes_per_token"]:
+			task_name.append(key)
+			bytes_per_token.append(elem)
+		maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
+	plt.suptitle(model_name+" mean bytes per token by task (95% CI)")
+	plt.xlabel("UTF-8 Bytes / Token")
+	sns.barplot(x=bytes_per_token, y=task_name, errorbar=("ci", 95))
+	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_bpb_tend(comparative_data, model_name, filename):
+	task_name = []
+	bits_per_byte = []
+
+	for key, value in comparative_data.items():
+		for elem in value["bits_per_byte"]:
+			task_name.append(key)
+			bits_per_byte.append(elem)
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
+	plt.suptitle(model_name+" mean bits per byte by task (95% CI)")
+	plt.xlabel("Bits / Byte")
+	sns.barplot(x=bits_per_byte, y=task_name, errorbar=("ci", 95))
 	plt.xlim([0, 3])
 	plt.savefig(filename)
 	plt.close()
@@ -540,10 +594,4 @@ graph_model_comparison(args.output_dir, task_comparative_data)
 
 # measurements to include:
 # - average bits per byte by model
-# - bits per byte by task + model
 # - average bytes/token by model
-# - bytes/token by task + model
-
-# create graphical plots, don't just output a handful of measurements
-# - make data distributions visible
-# - make statistical significance visible
