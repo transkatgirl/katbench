@@ -195,18 +195,19 @@ def graph_tasks_models_tokenization_dist(comparative_data, filename):
 	model_name = []
 	bytes_per_token = []
 	maximum_bytes_per_token = []
-	items = 0
+	tasks = set([])
 
 	for model, data in comparative_data.items():
 		for key, value in data.items():
-			items += 1
+			if key not in tasks:
+				tasks.add(key)
 			for elem in value["bytes_per_token"]:
 				task_name.append(key)
 				model_name.append(model)
 				bytes_per_token.append(elem)
 			maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
 
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks))))])
 	plt.suptitle("bytes per token by task + model")
 	plt.xlabel("UTF-8 Bytes / Token")
 	sns.violinplot(x=bytes_per_token, y=task_name, hue=model_name, density_norm="width")
@@ -218,17 +219,18 @@ def graph_tasks_models_bpb_dist(comparative_data, filename):
 	task_name = []
 	model_name = []
 	bits_per_byte = []
-	items = 0
+	tasks = set([])
 
 	for model, data in comparative_data.items():
 		for key, value in data.items():
-			items += 1
+			if key not in tasks:
+				tasks.add(key)
 			for elem in value["bits_per_byte"]:
 				task_name.append(key)
 				model_name.append(model)
 				bits_per_byte.append(elem)
 
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks))))])
 	plt.suptitle("bits per byte by task + model")
 	plt.xlabel("Bits / Byte")
 	sns.violinplot(x=bits_per_byte, y=task_name, hue=model_name, density_norm="width")
@@ -242,18 +244,19 @@ def graph_tasks_models_tokenization_tend(comparative_data, filename):
 	model_name = []
 	bytes_per_token = []
 	maximum_bytes_per_token = []
-	items = 0
+	tasks = set([])
 
 	for model, data in comparative_data.items():
 		for key, value in data.items():
-			items += 1
+			if key not in tasks:
+				tasks.add(key)
 			for elem in value["bytes_per_token"]:
 				task_name.append(key)
 				model_name.append(model)
 				bytes_per_token.append(elem)
 			maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
 
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks))))])
 	plt.suptitle("mean bytes per token by task + model (95% CI)")
 	plt.xlabel("UTF-8 Bytes / Token")
 	sns.barplot(x=bytes_per_token, y=task_name, hue=model_name, errorbar=("ci", 95))
@@ -265,17 +268,18 @@ def graph_tasks_models_bpb_tend(comparative_data, filename):
 	task_name = []
 	model_name = []
 	bits_per_byte = []
-	items = 0
+	tasks = set([])
 
 	for model, data in comparative_data.items():
 		for key, value in data.items():
-			items += 1
+			if key not in tasks:
+				tasks.add(key)
 			for elem in value["bits_per_byte"]:
 				task_name.append(key)
 				model_name.append(model)
 				bits_per_byte.append(elem)
 
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks))))])
 	plt.suptitle("mean bits per byte by task + model (95% CI)")
 	plt.xlabel("Bits / Byte")
 	sns.barplot(x=bits_per_byte, y=task_name, hue=model_name, errorbar=("ci", 95))
