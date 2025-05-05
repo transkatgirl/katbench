@@ -252,7 +252,7 @@ def graph_tasks_models_tokenization_tend(comparative_data, filename):
 			maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
 
 	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
-	plt.suptitle("bytes per token by task + model")
+	plt.suptitle("bytes per token by task + model (95% CI)")
 	plt.xlabel("UTF-8 Bytes / Token")
 	sns.barplot(x=bytes_per_token, y=task_name, hue=model_name, errorbar=("ci", 95), estimator="median")
 	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
@@ -274,7 +274,7 @@ def graph_tasks_models_bpb_tend(comparative_data, filename):
 				bits_per_byte.append(elem)
 
 	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+items))])
-	plt.suptitle("bits per byte by task + model")
+	plt.suptitle("bits per byte by task + model (95% CI)")
 	plt.xlabel("Bits / Byte")
 	sns.barplot(x=bits_per_byte, y=task_name, hue=model_name, errorbar=("ci", 95), estimator="median")
 	plt.xlim([0, 3])
