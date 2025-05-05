@@ -174,12 +174,12 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 	graph_task_tokenization_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-tokenization.png"))
 	graph_task_positional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-positional.png"))
 
-def graph_tasks(output_prefix, comparative_data):
-	graph_tasks_perplexity(comparative_data, os.path.join(output_prefix, "perplexity.png"))
-	graph_tasks_tokenization(comparative_data, os.path.join(output_prefix, "tokenization.png"))
-	graph_tasks_bpb(comparative_data, os.path.join(output_prefix, "bits-per-byte.png"))
+def graph_tasks(output_prefix, comparative_data, model_name):
+	graph_tasks_perplexity(comparative_data, model_name, os.path.join(output_prefix, "perplexity.png"))
+	graph_tasks_tokenization(comparative_data, model_name, os.path.join(output_prefix, "tokenization.png"))
+	graph_tasks_bpb(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte.png"))
 
-def graph_tasks_perplexity(comparative_data, filename):
+def graph_tasks_perplexity(comparative_data, model_name, filename):
 	task_name = []
 	perplexity = []
 
@@ -189,14 +189,14 @@ def graph_tasks_perplexity(comparative_data, filename):
 			perplexity.append(elem)
 
 	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
-	plt.suptitle("perplexity by task")
+	plt.suptitle(model_name+" perplexity by task")
 	plt.xlabel("Token Perplexity")
 	sns.violinplot(x=perplexity, y=task_name, density_norm="width", log_scale=True)
 	plt.xlim([1, 1000])
 	plt.savefig(filename)
 	plt.close()
 
-def graph_tasks_tokenization(comparative_data, filename):
+def graph_tasks_tokenization(comparative_data, model_name, filename):
 	task_name = []
 	bytes_per_token = []
 	maximum_bytes_per_token = []
@@ -208,14 +208,14 @@ def graph_tasks_tokenization(comparative_data, filename):
 		maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
 
 	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
-	plt.suptitle("bytes per token by task")
+	plt.suptitle(model_name+" bytes per token by task")
 	plt.xlabel("UTF-8 Bytes / Token")
 	sns.violinplot(x=bytes_per_token, y=task_name, density_norm="width")
 	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
 	plt.savefig(filename)
 	plt.close()
 
-def graph_tasks_bpb(comparative_data, filename):
+def graph_tasks_bpb(comparative_data, model_name, filename):
 	task_name = []
 	bits_per_byte = []
 
@@ -225,7 +225,7 @@ def graph_tasks_bpb(comparative_data, filename):
 			bits_per_byte.append(elem)
 
 	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
-	plt.suptitle("bits per byte by task")
+	plt.suptitle(model_name+" bits per byte by task")
 	plt.xlabel("Bits / Byte")
 	sns.violinplot(x=bits_per_byte, y=task_name, density_norm="width")
 	plt.xlim([0, 3])
@@ -356,6 +356,8 @@ def get_input_line_count(filename):
 	with open(filename) as file:
 		return sum(1 for line in file)
 
+task_comparative_data = {}
+
 def process_input_data(filename):
 	line_count = get_input_line_count(filename)
 	input_file = open(filename)
@@ -363,16 +365,18 @@ def process_input_data(filename):
 	metadata = {}
 	task_metrics = {}
 	tasks = {}
-	task_comparative_data = {}
 	task_positional_probs = {}
 	output_prefix = ""
+	model_name = ""
 
 	for line in tqdm.tqdm(input_file, desc=filename, total=line_count):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
+			model_name = metadata["endpoint_info"]["model_id"]
+			task_comparative_data[model_name] = {}
 			metadata["analyzed_from"] = filename
-			output_prefix = os.path.join(args.output_dir, metadata["endpoint_info"]["model_id"])
+			output_prefix = os.path.join(args.output_dir, model_name)
 			os.makedirs(output_prefix)
 			write_json(metadata, os.path.join(output_prefix, "metadata.json"))
 			continue
@@ -389,7 +393,7 @@ def process_input_data(filename):
 				task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 				for key, value in task_calculated_outputs[0].items():
 					task_metrics[task_name][key] = value
-				task_comparative_data[task_name] = task_calculated_outputs[1]
+				task_comparative_data[model_name][task_name] = task_calculated_outputs[1]
 				task_positional_probs[task_name] = {}
 			elif task_name:
 				task_metrics[task_name][key] = value
@@ -421,12 +425,12 @@ def process_input_data(filename):
 			task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 			for key, value in task_calculated_outputs[0].items():
 				task_metrics[task_name][key] = value
-			task_comparative_data[task_name+"*"] = task_calculated_outputs[1]
+			task_comparative_data[model_name][task_name+"*"] = task_calculated_outputs[1]
 			task_positional_probs[task_name] = {}
 
 	# TODO: CSV output
 
-	graph_tasks(output_prefix, task_comparative_data)
+	graph_tasks(output_prefix, task_comparative_data[model_name], model_name)
 	write_json(task_metrics, os.path.join(output_prefix, "metrics.json"))
 
 process_input_data(args.input_data)
@@ -434,8 +438,6 @@ process_input_data(args.input_data)
 # TODO: model vs. model comparisons
 
 # measurements to include:
-# - tokens per second by task
-
 # - average bits per byte by model
 # - bits per byte by task + model
 # - average bytes/token by model
