@@ -573,7 +573,3 @@ for filename in args.input_files:
 	process_input_data(filename)
 
 graph_model_comparison(args.output_dir, task_comparative_data)
-
-# measurements to include:
-# - average bits per byte by model
-# - average bytes/token by model
