@@ -6,7 +6,7 @@ what i use to compare LLM base models using dataset perplexities
 you will need:
 
 - a python3 venv with the dependencies specified in `requirements.txt`
-- a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index) run with the `--enable-prefill-logprobs --max-client-batch-size 16` flags
+- a working [TGI server](https://huggingface.co/docs/text-generation-inference/en/index) run with the `--enable-prefill-logprobs --max-client-batch-size 32` flags
 
 ## usage
 
