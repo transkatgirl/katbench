@@ -28,6 +28,8 @@ parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(ti
 
 args = parser.parse_args()
 
+print("output_dir="+args.output_dir)
+
 if os.path.exists(args.output_dir):
 	if os.path.isdir(args.output_dir):
 		shutil.rmtree(args.output_dir)
