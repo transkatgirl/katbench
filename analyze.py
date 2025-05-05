@@ -156,7 +156,8 @@ def write_data(data, name):
 
 def graph_task(task_name, items, prob_items):
 	graph_task_perplexity(items, task_name, "output/"+task_name+"-perplexity.png")
-	graph_task_bpb(items, task_name, "output/"+task_name+"-perplexity-bits-per-byte.png")
+	graph_task_bpb(items, task_name, "output/"+task_name+"-bits-per-byte.png")
+	graph_task_bpb_perplexity(items, task_name, "output/"+task_name+"-perplexity-bits-per-byte.png")
 	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-perplexity-length.png")
 	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-perplexity-tokenization.png")
 	graph_task_positional_perplexity(prob_items, task_name, "output/"+task_name+"-perplexity-positional.png")
@@ -235,6 +236,21 @@ def graph_task_perplexity(items, task_name, filename):
 	plt.close()
 
 def graph_task_bpb(items, task_name, filename):
+	bpbs = []
+	for item in items:
+		bpbs.append(item["bits_per_byte"])
+
+	plt.figure(layout="tight")
+	plt.suptitle(task_name+" bits per byte (n="+str(len(bpbs))+")")
+	plt.xlabel("Bits / Byte")
+	plt.ylabel("Dataset Items")
+	sns.histplot(bpbs, kde=True)
+	plt.axvline(np.median(bpbs), color='.5', linestyle='--')
+	plt.xlim([0, 3])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_task_bpb_perplexity(items, task_name, filename):
 	bpbs = []
 	perplexities = []
 	for item in items:
