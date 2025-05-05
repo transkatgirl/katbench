@@ -22,7 +22,7 @@ if not nltk_downloader.is_installed('punkt_tab'):
 	nltk_downloader.download('punkt_tab')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input_data', type=str)
+parser.add_argument('input_files', nargs="+", type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
 
 args = parser.parse_args()
@@ -433,7 +433,8 @@ def process_input_data(filename):
 	graph_tasks(output_prefix, task_comparative_data[model_name], model_name)
 	write_json(task_metrics, os.path.join(output_prefix, "metrics.json"))
 
-process_input_data(args.input_data)
+for filename in args.input_files:
+	process_input_data(filename)
 
 # TODO: model vs. model comparisons
 
