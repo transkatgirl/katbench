@@ -12,7 +12,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# TODO: Multithreading, CSV output
+# TODO: Multithreading, CSV output, performance optimization
+# TODO: Add flag to skip task-specific graphs
 
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
