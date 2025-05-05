@@ -371,6 +371,7 @@ def process_input_data(filename):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
+			metadata["analyzed_from"] = filename
 			output_prefix = os.path.join(args.output_dir, metadata["endpoint_info"]["model_id"])
 			os.makedirs(output_prefix)
 			write_json(metadata, os.path.join(output_prefix, "metadata.json"))
@@ -420,13 +421,13 @@ def process_input_data(filename):
 			task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 			for key, value in task_calculated_outputs[0].items():
 				task_metrics[task_name][key] = value
-			task_comparative_data[task_name] = task_calculated_outputs[1]
+			task_comparative_data[task_name+"*"] = task_calculated_outputs[1]
 			task_positional_probs[task_name] = {}
 
-	# TODO: CSV output, Handle incomplete runs correctly
+	# TODO: CSV output
 
 	graph_tasks(output_prefix, task_comparative_data)
-	write_json(metadata, os.path.join(output_prefix, "metrics.json"))
+	write_json(task_metrics, os.path.join(output_prefix, "metrics.json"))
 
 process_input_data(args.input_data)
 
