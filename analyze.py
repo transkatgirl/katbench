@@ -5,6 +5,7 @@ import tqdm
 import time
 import datetime
 import math
+import shutil
 import nltk
 import numpy as np
 import matplotlib as mpl
@@ -25,6 +26,13 @@ parser.add_argument('input_data', type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
 
 args = parser.parse_args()
+
+if os.path.exists(args.output_dir):
+	if os.path.isdir(args.output_dir):
+		shutil.rmtree(args.output_dir)
+	else:
+		os.remove(args.output_dir)
+os.makedirs(args.output_dir)
 
 def calculate_item_metrics(token_logprobs):
 	text = ""
@@ -147,25 +155,29 @@ def calculate_task_throughput_metrics(task_metrics):
 		}
 	}
 
-def write_data(data, name):
-	if os.path.exists("output/"+name+".json"):
-		os.remove("output/"+name+".json")
-	output_file = open("output/"+name+".json", "x")
+def write_json(data, path):
+	if os.path.exists(path):
+		os.remove(path)
+	output_file = open(path, "x")
 	json.dump(data, output_file, indent="\t")
 	output_file.close()
 
-def graph_task(task_name, items, prob_items):
-	graph_task_perplexity(items, task_name, "output/"+task_name+"-perplexity.png")
-	graph_task_bpb(items, task_name, "output/"+task_name+"-bits-per-byte.png")
-	graph_task_bpb_perplexity(items, task_name, "output/"+task_name+"-perplexity-bits-per-byte.png")
-	graph_task_length_perplexity(items, task_name, "output/"+task_name+"-perplexity-length.png")
-	graph_task_tokenization_perplexity(items, task_name, "output/"+task_name+"-perplexity-tokenization.png")
-	graph_task_positional_perplexity(prob_items, task_name, "output/"+task_name+"-perplexity-positional.png")
+def graph_task(output_prefix, task_name, items, prob_items, incomplete):
+	if incomplete:
+		task_name += "~incomplete"
+	output_prefix = os.path.join(output_prefix, "tasks/"+task_name)
+	os.makedirs(output_prefix)
+	graph_task_perplexity(items, task_name, os.path.join(output_prefix, "perplexity.png"))
+	graph_task_bpb(items, task_name, os.path.join(output_prefix, "bits-per-byte.png"))
+	graph_task_bpb_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-bits-per-byte.png"))
+	graph_task_length_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-length.png"))
+	graph_task_tokenization_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-tokenization.png"))
+	graph_task_positional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-positional.png"))
 
-def graph_tasks(comparative_data):
-	graph_tasks_perplexity(comparative_data, "output/task-perplexity.png")
-	graph_tasks_tokenization(comparative_data, "output/task-tokenization.png")
-	graph_tasks_bpb(comparative_data, "output/task-bits-per-byte.png")
+def graph_tasks(output_prefix, comparative_data):
+	graph_tasks_perplexity(comparative_data, os.path.join(output_prefix, "perplexity.png"))
+	graph_tasks_tokenization(comparative_data, os.path.join(output_prefix, "tokenization.png"))
+	graph_tasks_bpb(comparative_data, os.path.join(output_prefix, "bits-per-byte.png"))
 
 def graph_tasks_perplexity(comparative_data, filename):
 	task_name = []
@@ -353,12 +365,15 @@ def process_input_data(filename):
 	tasks = {}
 	task_comparative_data = {}
 	task_positional_probs = {}
+	output_prefix = ""
 
 	for line in tqdm.tqdm(input_file, desc=filename, total=line_count):
 		line_data = json.loads(line)
 		if len(metadata) == 0:
 			metadata = line_data
-			write_data(metadata, "metadata")
+			output_prefix = os.path.join(args.output_dir, metadata["endpoint_info"]["model_id"])
+			os.makedirs(output_prefix)
+			write_json(metadata, os.path.join(output_prefix, "metadata.json"))
 			continue
 
 		task_name = None
@@ -369,7 +384,7 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
-				graph_task(task_name, tasks[task_name], task_positional_probs[task_name])
+				graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], False)
 				task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 				for key, value in task_calculated_outputs[0].items():
 					task_metrics[task_name][key] = value
@@ -401,7 +416,7 @@ def process_input_data(filename):
 			for key, value in calculate_task_throughput_metrics(task_metrics[key]).items():
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
-			graph_task(task_name, tasks[task_name], task_positional_probs[task_name])
+			graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], True)
 			task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 			for key, value in task_calculated_outputs[0].items():
 				task_metrics[task_name][key] = value
@@ -410,8 +425,8 @@ def process_input_data(filename):
 
 	# TODO: CSV output, Handle incomplete runs correctly
 
-	graph_tasks(task_comparative_data)
-	write_data(task_metrics, "metrics")
+	graph_tasks(output_prefix, task_comparative_data)
+	write_json(metadata, os.path.join(output_prefix, "metrics.json"))
 
 process_input_data(args.input_data)
 
