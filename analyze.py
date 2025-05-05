@@ -184,6 +184,8 @@ def graph_model_comparison(output_prefix, comparative_data):
 	graph_tasks_models_bpb(comparative_data, os.path.join(output_prefix, "task-bits-per-byte.png"))
 
     # TODO: overall comparisons
+    # see: https://seaborn.pydata.org/generated/seaborn.displot.html#seaborn.displot
+    # need to ignore task data not shared by all models
 
 def graph_tasks_models_tokenization(comparative_data, filename):
 	task_name = []
