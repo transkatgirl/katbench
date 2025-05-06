@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # TODO: Multithreading, CSV output, performance optimization
-# TODO: Add flag to skip task-specific graphs
 
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
@@ -25,6 +24,7 @@ if not nltk_downloader.is_installed('punkt_tab'):
 parser = argparse.ArgumentParser()
 parser.add_argument('input_files', nargs="+", type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
+parser.add_argument('--skip_slow_analyses', action='store_true')
 
 args = parser.parse_args()
 
@@ -533,7 +533,8 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
-				graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], False)
+				if not args.skip_slow_analyses:
+					graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], False)
 				task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 				for key, value in task_calculated_outputs[0].items():
 					task_metrics[task_name][key] = value
@@ -565,7 +566,8 @@ def process_input_data(filename):
 			for key, value in calculate_task_throughput_metrics(task_metrics[key]).items():
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
-			graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], True)
+			if not args.skip_slow_analyses:
+				graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], True)
 			task_calculated_outputs = calculate_task_data_metrics(tasks[task_name])
 			for key, value in task_calculated_outputs[0].items():
 				task_metrics[task_name][key] = value
