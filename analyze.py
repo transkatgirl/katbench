@@ -581,4 +581,6 @@ def process_input_data(filename):
 for filename in args.input_files:
 	process_input_data(filename)
 
+mpl.rcParams['figure.dpi'] = 150
+
 graph_model_comparison(args.output_dir, task_comparative_data)
