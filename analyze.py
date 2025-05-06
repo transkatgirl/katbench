@@ -574,7 +574,8 @@ def process_input_data(filename):
 			task_comparative_data[model_name][task_name+"*"] = task_calculated_outputs[1]
 			task_positional_probs[task_name] = {}
 
-	graph_tasks(output_prefix, task_comparative_data[model_name], model_name)
+	if not args.skip_slow_analyses:
+		graph_tasks(output_prefix, task_comparative_data[model_name], model_name)
 	write_json(task_metrics, os.path.join(output_prefix, "metrics.json"))
 
 for filename in args.input_files:
