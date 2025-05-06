@@ -14,6 +14,7 @@ import seaborn as sns
 
 # TODO: Multithreading, CSV output, performance optimization
 # TODO: Separate model comparisons by task into multiple images
+# TODO: https://seaborn.pydata.org/generated/seaborn.move_legend.html#seaborn.move_legend
 
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
