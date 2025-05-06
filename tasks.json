@@ -199,5 +199,50 @@
 		"hf_repo": "AlekseyKorshuk/erotic-books",
 		"subsets": [],
 		"split": "train"
+	},
+	"gutenberg_english": {
+		"hf_repo": "sedthh/gutenberg_english",
+		"subsets": [],
+		"split": "train[:500]",
+		"field": "TEXT"
+	},
+	"historical_texts": {
+		"hf_repo": "Nadav/historical_texts",
+		"subsets": [],
+		"split": "test[:500]"
+	},
+	"tinystories": {
+		"hf_repo": "roneneldan/TinyStories",
+		"subsets": [],
+		"split": "validation"
+	},
+	"phishing-texts": {
+		"hf_repo": "David-Egea/phishing-texts",
+		"subsets": [],
+		"split": "train"
+	},
+	"llm-generated-texts:human": {
+		"hf_repo": "artnitolog/llm-generated-texts",
+		"subsets": [],
+		"split": "train",
+		"field": "human"
+	},
+	"llm-generated-texts:gpt4-turbo": {
+		"hf_repo": "artnitolog/llm-generated-texts",
+		"subsets": [],
+		"split": "train",
+		"field": "GPT4 Turbo 2024-04-09"
+	},
+	"llm-generated-texts:claude-3-opus": {
+		"hf_repo": "artnitolog/llm-generated-texts",
+		"subsets": [],
+		"split": "train",
+		"field": "Claude 3 Opus"
+	},
+	"llm-generated-texts:llama-3-70b": {
+		"hf_repo": "artnitolog/llm-generated-texts",
+		"subsets": [],
+		"split": "train",
+		"field": "Llama3 70B"
 	}
 }

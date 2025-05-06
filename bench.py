@@ -41,6 +41,7 @@ def hydrate_tasks(tasks):
 	hydrated_tasks = {}
 	for key, value in tqdm.tqdm(tasks.items(), desc="load_datasets"):
 		hydrated_tasks[key] = {"dataset": load_dataset(value["repo"], value["subset"], split=value["split"]), "field": value["field"]}
+		assert len(hydrated_tasks[key]["dataset"][1][hydrated_tasks[key]["field"]]) > 0
 	return hydrated_tasks
 
 async def run_task(semaphore, payload_limit, client, prompt, truncate):
