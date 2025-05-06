@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # TODO: Multithreading, CSV output, performance optimization
+# TODO: Separate model comparisons by task into multiple images
 
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
