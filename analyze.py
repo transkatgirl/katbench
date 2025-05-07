@@ -63,6 +63,8 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 		word_count = max(len(nltk.tokenize.word_tokenize(text)), 1)
 	token_count = max(token_count, 1)
 
+	logprob_p95 = np.percentile(logprobs, 95)
+
 	return (
 		{
 			"byte_count": byte_count,
@@ -71,9 +73,9 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 			"byte_perplexity": np.exp(-logprob_sum / byte_count),
 			"word_perplexity": np.exp(-logprob_sum / word_count) if not skip_slow else None,
 			"token_perplexity": np.exp(-logprob_sum / token_count),
-			"token_perplexity_p95": np.exp(np.percentile(logprobs, 95)),
+			"token_perplexity_p95": np.exp(logprob_p95),
 			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
-			"bits_per_byte_p95": np.percentile(logprobs, 95) / byte_count * 1 / math.log(2),
+			"bits_per_byte_p95": logprob_p95 / byte_count * 1 / math.log(2),
 		},
 		probs
 	)
