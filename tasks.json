@@ -133,7 +133,7 @@
 	"ubuntu-irc": {
 		"hf_repo": "parameterlab/scaling_mia_the_pile_00_Ubuntu_IRC",
 		"subsets": [],
-		"split": "train[:500]"
+		"split": "train[:250]"
 	},
 	"culturax:eng": {
 		"hf_repo": "yiyic/culturaX_eng",
