@@ -55,7 +55,7 @@ async def _run_task_loop(payload_limit, depth_limit, client, prompt, truncate, d
 	for token in output.details.prefill[1:]:
 		characters += len(token.text)
 	if len(prompt) > characters and depth < depth_limit:
-		split_output = await _run_task_loop(payload_limit, client, prompt[characters:], truncate, depth + 1)
+		split_output = await _run_task_loop(payload_limit, depth_limit, client, prompt[characters:], truncate, depth + 1)
 		return [*output.details.prefill, *split_output]
 	else:
 		return output.details.prefill
