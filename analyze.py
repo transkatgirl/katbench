@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # TODO: Multithreading, CSV output, performance optimization, code cleanup
+# TODO: make model colors consistent between task comparison graphs
 
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
