@@ -187,10 +187,10 @@ def graph_tasks(output_prefix, comparative_data, model_name):
 	graph_tasks_bpb_tend(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-tend.png"))
 
 def graph_model_comparison(output_prefix, comparative_data):
-	graph_tasks_models_tokenization_dist(comparative_data, os.path.join(output_prefix, "task-tokenization-dist.png"))
-	graph_tasks_models_tokenization_tend(comparative_data, os.path.join(output_prefix, "task-tokenization-tend.png"))
 	graph_tasks_models_bpb_dist(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-dist.png"))
 	graph_tasks_models_bpb_tend(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-tend.png"))
+	graph_tasks_models_tokenization_dist(comparative_data, os.path.join(output_prefix, "task-tokenization-dist.png"))
+	graph_tasks_models_tokenization_tend(comparative_data, os.path.join(output_prefix, "task-tokenization-tend.png"))
 
 def graph_model_comparison_multi_file(output_prefix, comparative_data):
 	tasks = {}
