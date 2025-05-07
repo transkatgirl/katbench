@@ -73,6 +73,7 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 			"token_perplexity": np.exp(-logprob_sum / token_count),
 			"token_perplexity_p95": np.exp(np.percentile(logprobs, 95)),
 			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
+			"bits_per_byte_p95": np.percentile(logprobs, 95) / byte_count * 1 / math.log(2),
 		},
 		probs
 	)
@@ -84,6 +85,7 @@ def calculate_task_data_metrics(items, skip_words):
 	byte_perplexities = []
 	word_perplexities = []
 	token_perplexities = []
+	token_perplexities_p95 = []
 	bpbs = []
 	bytes_per_token = []
 	words_per_token = []
@@ -95,6 +97,7 @@ def calculate_task_data_metrics(items, skip_words):
 		byte_perplexities.append(item["byte_perplexity"])
 		word_perplexities.append(item["word_perplexity"])
 		token_perplexities.append(item["token_perplexity"])
+		token_perplexities_p95.append(item["token_perplexity_p95"])
 		bpbs.append(item["bits_per_byte"])
 		bytes_per_token.append(item["byte_count"] / item["token_count"])
 		if item["word_count"] and item["word_count"] > 0:
@@ -115,15 +118,16 @@ def calculate_task_data_metrics(items, skip_words):
 					"words": calculate_task_element_metrics(word_counts) if not skip_words else None,
 					"tokens": calculate_task_element_metrics(token_counts),
 				},
-				"tokenization": {
+				"item_tokenization": {
 					"bytes_per_token": calculate_task_element_metrics(bytes_per_token),
 					"words_per_token": calculate_task_element_metrics(words_per_token) if not skip_words else None,
 					"bytes_per_word": calculate_task_element_metrics(bytes_per_word) if not skip_words else None,
 				},
-				"perplexities": {
+				"item_perplexities": {
 					"byte_perplexity": calculate_task_element_metrics(byte_perplexities),
 					"word_perplexity": calculate_task_element_metrics(word_perplexities) if not skip_words else None,
 					"token_perplexity": calculate_task_element_metrics(token_perplexities),
+					"token_perplexity_p95": calculate_task_element_metrics(token_perplexities_p95),
 					"bits_per_byte": calculate_task_element_metrics(bpbs),
 				}
 			},
@@ -183,9 +187,11 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 	graph_task_length_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-length.png"))
 	graph_task_tokenization_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-tokenization.png"))
 	graph_task_positional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-positional.png"))
+	graph_task_distributional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-distributional.png"))
 
 def graph_tasks(output_prefix, comparative_data, model_name):
 	graph_tasks_perplexity_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity.png"))
+	graph_tasks_perplexity_p95_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity-p95.png"))
 	graph_tasks_tokenization_dist(comparative_data, model_name, os.path.join(output_prefix, "tokenization-dist.png"))
 	graph_tasks_tokenization_tend(comparative_data, model_name, os.path.join(output_prefix, "tokenization-tend.png"))
 	graph_tasks_bpb_dist(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-dist.png"))
@@ -373,6 +379,23 @@ def graph_tasks_perplexity_dist(comparative_data, model_name, filename):
 	plt.savefig(filename)
 	plt.close()
 
+def graph_tasks_perplexity_p95_dist(comparative_data, model_name, filename):
+	task_name = []
+	perplexity = []
+
+	for key, value in comparative_data.items():
+		for elem in value["token_perplexity_p95"]:
+			task_name.append(key)
+			perplexity.append(elem)
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
+	plt.suptitle(model_name+" 95th percentile perplexity by task")
+	plt.xlabel("95th Percentile Token Perplexity")
+	sns.violinplot(x=perplexity, y=task_name, density_norm="width", log_scale=True)
+	plt.xlim([1, 1000])
+	plt.savefig(filename)
+	plt.close()
+
 def graph_tasks_tokenization_dist(comparative_data, model_name, filename):
 	task_name = []
 	bytes_per_token = []
@@ -451,8 +474,8 @@ def graph_task_perplexity(items, task_name, filename):
 		perplexities.append(max(item["token_perplexity"], 1))
 
 	plt.figure(layout="tight")
-	plt.suptitle(task_name+" perplexity (n="+str(len(perplexities))+")")
-	plt.xlabel("Token Perplexity")
+	plt.suptitle(task_name+" item perplexity (n="+str(len(perplexities))+")")
+	plt.xlabel("Mean Token Perplexity")
 	plt.ylabel("Dataset Items")
 	sns.histplot(perplexities, kde=True, log_scale=True)
 	plt.axvline(np.median(perplexities), color='.5', linestyle='--')
@@ -466,7 +489,7 @@ def graph_task_perplexity_p95(items, task_name, filename):
 		perplexities.append(max(item["token_perplexity_p95"], 1))
 
 	plt.figure(layout="tight")
-	plt.suptitle(task_name+" 95th percentile perplexity (n="+str(len(perplexities))+")")
+	plt.suptitle(task_name+" 95th percentile item perplexity (n="+str(len(perplexities))+")")
 	plt.xlabel("95th Percentile Token Perplexity")
 	plt.ylabel("Dataset Items")
 	sns.histplot(perplexities, kde=True, log_scale=True)
@@ -481,8 +504,8 @@ def graph_task_bpb(items, task_name, filename):
 		bpbs.append(item["bits_per_byte"])
 
 	plt.figure(layout="tight")
-	plt.suptitle(task_name+" bits per byte (n="+str(len(bpbs))+")")
-	plt.xlabel("Bits / Byte")
+	plt.suptitle(task_name+" item bits per byte (n="+str(len(bpbs))+")")
+	plt.xlabel("Mean Bits Per Byte")
 	plt.ylabel("Dataset Items")
 	sns.histplot(bpbs, kde=True)
 	plt.axvline(np.median(bpbs), color='.5', linestyle='--')
@@ -498,8 +521,8 @@ def graph_task_bpb_perplexity(items, task_name, filename):
 		perplexities.append(max(item["token_perplexity"], 1))
 
 	g = sns.JointGrid(x=perplexities, y=bpbs, xlim=[1, 1000], ylim=[0, 3], height=9.6, ratio=3, marginal_ticks=True)
-	g.figure.suptitle(task_name+" perplexity by bits per byte (n="+str(len(perplexities))+", 95% CI)")
-	g.set_axis_labels("Token Perplexity", "Bits / Byte")
+	g.figure.suptitle(task_name+" item perplexity by bits per byte (n="+str(len(perplexities))+", 95% CI)")
+	g.set_axis_labels("Mean Token Perplexity", "Mean Bits / Byte")
 	g.ax_joint.set_xscale('log')
 	if len(perplexities) > 1000:
 		g.plot_joint(sns.regplot, scatter_kws={"alpha": 0.25}, logx=True, ci=95)
@@ -520,8 +543,8 @@ def graph_task_length_perplexity(items, task_name, filename):
 		perplexities.append(max(item["token_perplexity"], 1))
 
 	g = sns.JointGrid(x=lengths, y=perplexities, ylim=[1, 1000], height=9.6, ratio=3, marginal_ticks=True)
-	g.figure.suptitle(task_name+" perplexity by length (n="+str(len(perplexities))+")")
-	g.set_axis_labels("Token Count", "Token Perplexity")
+	g.figure.suptitle(task_name+" item perplexity by length (n="+str(len(perplexities))+")")
+	g.set_axis_labels("Token Count", "Mean Token Perplexity")
 	g.ax_joint.set_xscale('log')
 	g.ax_joint.set_yscale('log')
 	if len(perplexities) > 1000:
@@ -543,8 +566,8 @@ def graph_task_tokenization_perplexity(items, task_name, filename):
 		perplexities.append(max(item["token_perplexity"], 1))
 
 	g = sns.JointGrid(x=bytes_per_token, y=perplexities, ylim=[1, 1000], height=9.6, ratio=3, marginal_ticks=True)
-	g.figure.suptitle(task_name+" perplexity by bytes per token (n="+str(len(perplexities))+")")
-	g.set_axis_labels("UTF-8 Bytes / Token", "Token Perplexity")
+	g.figure.suptitle(task_name+" item perplexity by bytes per token (n="+str(len(perplexities))+")")
+	g.set_axis_labels("Mean UTF-8 Bytes / Token", "Mean Token Perplexity")
 	g.ax_joint.set_yscale('log')
 	if len(perplexities) > 1000:
 		g.plot_joint(sns.scatterplot, alpha=0.25)
@@ -555,6 +578,26 @@ def graph_task_tokenization_perplexity(items, task_name, filename):
 	g.plot_marginals(sns.histplot, kde=True)
 	g.refline(x=np.median(bytes_per_token), y=np.median(perplexities))
 	g.savefig(filename)
+	plt.close()
+
+def graph_task_distributional_perplexity(positional_probs, task_name, filename):
+	positional_probs=list(positional_probs.values())
+
+	probs = []
+	for pos, prob_set in enumerate(positional_probs, start=1):
+		for prob in prob_set:
+			probs.append(prob)
+
+	items = len(positional_probs)
+
+	plt.figure(layout="tight", figsize=[11.2, 4.8])
+	plt.suptitle(task_name+" token perplexity distribution (first "+str(items)+" tokens, n="+str(len(positional_probs[0]))+")")
+	plt.xlabel("Token Perplexity")
+	sns.histplot(probs, stat="proportion", kde=True, log_scale=True)
+	plt.loglog()
+	plt.ylim(bottom=0.0001)
+	plt.xlim([1, 10000])
+	plt.savefig(filename)
 	plt.close()
 
 def graph_task_positional_perplexity(positional_probs, task_name, filename):
