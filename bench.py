@@ -18,10 +18,13 @@ parser.add_argument('--task_file', type=str, default="tasks.json")
 parser.add_argument('--output_file', type=str, default="output-" + str(round(time.time())) + ".jsonl")
 parser.add_argument('--context_len', type=int)
 parser.add_argument('--payload_limit', type=int, default=2000000)
+parser.add_argument('--depth_limit', type=int, default=500)
 parser.add_argument('--request_timeout', type=int, default=60*30)
 parser.add_argument('--retry_timeout', type=int, default=60*4)
 
 args = parser.parse_args()
+
+sys.setrecursionlimit(max((args.depth_limit+500), 1000))
 
 def load_raw_tasks(filename):
 	tasks = {}
@@ -42,16 +45,16 @@ def hydrate_tasks(tasks):
 		assert len(hydrated_tasks[key]["dataset"][1][hydrated_tasks[key]["field"]]) > 0
 	return hydrated_tasks
 
-async def run_task(semaphore, payload_limit, client, prompt, truncate):
+async def run_task(semaphore, payload_limit, depth_limit, client, prompt, truncate):
 	async with semaphore:
-		return await _run_task_loop(payload_limit, client, prompt, truncate)
+		return await _run_task_loop(payload_limit, depth_limit, client, prompt, truncate)
 
-async def _run_task_loop(payload_limit, client, prompt, truncate, depth = 0):
+async def _run_task_loop(payload_limit, depth_limit, client, prompt, truncate, depth = 0):
 	output = await _run_task_request(client, prompt[:payload_limit], truncate)
 	characters = 0
 	for token in output.details.prefill[1:]:
 		characters += len(token.text)
-	if len(prompt) > characters and depth < 512:
+	if len(prompt) > characters and depth < depth_limit:
 		split_output = await _run_task_loop(payload_limit, client, prompt[characters:], truncate, depth + 1)
 		return [*output.details.prefill, *split_output]
 	else:
@@ -95,7 +98,7 @@ async def main():
 		output_file.write(json.dumps({"start_task": name, "wallclock": datetime.datetime.now().astimezone().isoformat()}, separators=(',', ':')))
 		output_file.write("\n")
 		start = time.perf_counter_ns()
-		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, payload_limit, client, item[field], max_input) for item in dataset["dataset"] if item[field]], desc=name):
+		for result in tqdm.asyncio.tqdm.as_completed([run_task(semaphore, payload_limit, args.depth_limit, client, item[field], max_input) for item in dataset["dataset"] if item[field]], desc=name):
 			output_file.write(json.dumps({name: convert_output_format(await result)}, separators=(',', ':')))
 			output_file.write("\n")
 		output_file.write(json.dumps({"completed_task": name, "monotonic_ns": time.perf_counter_ns() - start}, separators=(',', ':')))

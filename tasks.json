@@ -244,5 +244,10 @@
 		"subsets": [],
 		"split": "train",
 		"field": "Llama3 70B"
+	},
+	"ubuntu-irc": {
+		"hf_repo": "parameterlab/scaling_mia_the_pile_00_Ubuntu_IRC",
+		"subsets": [],
+		"split": "train"
 	}
 }
