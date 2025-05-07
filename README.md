@@ -16,7 +16,7 @@ performs dataset tokenization & logprob calculation using TGI server, saving tok
 
 ```
 usage: bench.py [-h] [--api_key API_KEY] [--model MODEL] [--task_file TASK_FILE] [--output_file OUTPUT_FILE] [--context_len CONTEXT_LEN]
-                [--payload_limit PAYLOAD_LIMIT] [--request_timeout REQUEST_TIMEOUT] [--retry_timeout RETRY_TIMEOUT]
+                [--payload_limit PAYLOAD_LIMIT] [--depth_limit DEPTH_LIMIT] [--request_timeout REQUEST_TIMEOUT] [--retry_timeout RETRY_TIMEOUT]
                 base_url
 ```
 
