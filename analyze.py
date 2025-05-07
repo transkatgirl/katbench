@@ -593,7 +593,7 @@ def graph_task_distributional_perplexity(positional_probs, task_name, filename):
 	plt.figure(layout="tight", figsize=[11.2, 4.8])
 	plt.suptitle(task_name+" token perplexity distribution (first "+str(items)+" tokens, n="+str(len(positional_probs[0]))+")")
 	plt.xlabel("Token Perplexity")
-	sns.histplot(probs, stat="proportion", kde=True, log_scale=True)
+	sns.histplot(probs, stat="proportion", log_scale=True)
 	plt.loglog()
 	plt.ylim(bottom=0.0001)
 	plt.xlim([1, 10000])
