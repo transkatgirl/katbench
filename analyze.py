@@ -395,7 +395,7 @@ def graph_tasks_perplexity_p95_dist(comparative_data, model_name, filename):
 	plt.suptitle(model_name+" 95th percentile perplexity by task")
 	plt.xlabel("95th Percentile Token Perplexity")
 	sns.violinplot(x=perplexity, y=task_name, density_norm="width", log_scale=True)
-	plt.xlim([1, 1000])
+	plt.xlim([1, 100000])
 	plt.savefig(filename)
 	plt.close()
 
@@ -497,7 +497,7 @@ def graph_task_perplexity_p95(items, task_name, filename):
 	plt.ylabel("Dataset Items")
 	sns.histplot(perplexities, kde=True, log_scale=True)
 	plt.axvline(np.median(perplexities), color='.5', linestyle='--')
-	plt.xlim([1, 10000])
+	plt.xlim([1, 100000])
 	plt.savefig(filename)
 	plt.close()
 
