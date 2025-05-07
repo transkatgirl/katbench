@@ -84,12 +84,12 @@ async def main():
 	payload_limit = args.payload_limit - 100000
 
 	semaphore = asyncio.Semaphore(batch_size)
-	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size)+", payload_limit="+str(payload_limit))
+	print("model="+info["model_id"]+", context_len="+str(max_input)+", batch_size="+str(batch_size)+", payload_limit="+str(payload_limit)+", depth_limit="+str(args.depth_limit))
 
 	print("open_output_file", args.output_file)
 	output_file = open(args.output_file, "x")
 
-	output_file.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input, "payload_limit": payload_limit}, separators=(',', ':')))
+	output_file.write(json.dumps({"tasks": raw_tasks, "endpoint_info": info, "effective_context_len": max_input, "payload_limit": payload_limit, "depth_limit": args.depth_limit}, separators=(',', ':')))
 	output_file.write("\n")
 	output_file.flush()
 
