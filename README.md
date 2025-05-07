@@ -35,5 +35,5 @@ usage: collate.py [-h] [--output_file OUTPUT_FILE] input_files [input_files ...]
 analyzes data saved to disk by `bench.py` and generates data analyses
 
 ```
-usage: analyze.py [-h] [--output_dir OUTPUT_DIR] [--skip_slow_analyses] input_files [input_files ...]
+usage: analyze.py [-h] [--output_dir OUTPUT_DIR] [--run_slow_analyses] input_files [input_files ...]
 ```

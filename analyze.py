@@ -13,8 +13,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # TODO: Multithreading, CSV output, performance optimization, code cleanup
-# TODO: Separate model comparisons by task into multiple images
-# TODO: https://seaborn.pydata.org/generated/seaborn.move_legend.html#seaborn.move_legend
 
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
@@ -26,7 +24,7 @@ if not nltk_downloader.is_installed('punkt_tab'):
 parser = argparse.ArgumentParser()
 parser.add_argument('input_files', nargs="+", type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
-parser.add_argument('--skip_slow_analyses', action='store_true')
+parser.add_argument('--run_slow_analyses', action='store_true')
 
 args = parser.parse_args()
 
@@ -39,12 +37,12 @@ if os.path.exists(args.output_dir):
 		os.remove(args.output_dir)
 os.makedirs(args.output_dir)
 
-def calculate_item_metrics(token_logprobs, skip_words):
+def calculate_item_metrics(token_logprobs, skip_slow):
 	text = ""
 	probs = []
 	logprob_sum = 0.0
 	token_count = 0
-	wrapped = False
+	wrapped = skip_slow
 	for token in token_logprobs:
 		for key, value in token.items():
 			if value:
@@ -58,17 +56,17 @@ def calculate_item_metrics(token_logprobs, skip_words):
 
 	byte_count = max(len(text.encode("utf-8")), 1)
 	word_count = 1
-	if not skip_words:
+	if not skip_slow:
 		word_count = max(len(nltk.tokenize.word_tokenize(text)), 1)
 	token_count = max(token_count, 1)
 
 	return (
 		{
 			"byte_count": byte_count,
-			"word_count": word_count if not skip_words else None,
+			"word_count": word_count if not skip_slow else None,
 			"token_count": token_count,
 			"byte_perplexity": np.exp(-logprob_sum / byte_count),
-			"word_perplexity": np.exp(-logprob_sum / word_count) if not skip_words else None,
+			"word_perplexity": np.exp(-logprob_sum / word_count) if not skip_slow else None,
 			"token_perplexity": np.exp(-logprob_sum / token_count),
 			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
 		},
@@ -189,107 +187,66 @@ def graph_tasks(output_prefix, comparative_data, model_name):
 	graph_tasks_bpb_tend(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-tend.png"))
 
 def graph_model_comparison(output_prefix, comparative_data):
-	graph_tasks_models_tokenization_dist(comparative_data, os.path.join(output_prefix, "task-tokenization-dist.png"))
-	graph_tasks_models_tokenization_tend(comparative_data, os.path.join(output_prefix, "task-tokenization-tend.png"))
-	graph_tasks_models_bpb_dist(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-dist.png"))
-	graph_tasks_models_bpb_tend(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-tend.png"))
+	tasks = {}
 
-def graph_tasks_models_tokenization_dist(comparative_data, filename):
-	task_name = []
-	model_name = []
-	bytes_per_token = []
-	maximum_bytes_per_token = []
-	tasks = set([])
+	prediction_output_prefix = os.path.join(output_prefix, "bits-per-byte")
+	tokenization_output_prefix = os.path.join(output_prefix, "bytes-per-token")
+
+	os.makedirs(prediction_output_prefix)
+	os.makedirs(tokenization_output_prefix)
 
 	for model, data in comparative_data.items():
 		for key, value in data.items():
 			if key not in tasks:
-				tasks.add(key)
+				tasks[key] = {"bytes_per_token_model_name": [], "bits_per_byte_model_name": [], "maximum_bytes_per_token": [], "maximum_bits_per_byte": [], "bytes_per_token": [], "bits_per_byte": []}
 			for elem in value["bytes_per_token"]:
-				task_name.append(key)
-				model_name.append(model)
-				bytes_per_token.append(elem)
-			maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
-
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks)*0.5)))])
-	plt.suptitle("bytes per token by task + model")
-	plt.xlabel("UTF-8 Bytes / Token")
-	sns.violinplot(x=bytes_per_token, y=task_name, hue=model_name, density_norm="width")
-	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
-	plt.savefig(filename)
-	plt.close()
-
-def graph_tasks_models_bpb_dist(comparative_data, filename):
-	task_name = []
-	model_name = []
-	bits_per_byte = []
-	tasks = set([])
-
-	for model, data in comparative_data.items():
-		for key, value in data.items():
-			if key not in tasks:
-				tasks.add(key)
+				tasks[key]["bytes_per_token_model_name"].append(model)
+				tasks[key]["bytes_per_token"].append(elem)
+			tasks[key]["maximum_bytes_per_token"].append(np.max(value["bytes_per_token"]))
 			for elem in value["bits_per_byte"]:
-				task_name.append(key)
-				model_name.append(model)
-				bits_per_byte.append(elem)
+				tasks[key]["bits_per_byte_model_name"].append(model)
+				tasks[key]["bits_per_byte"].append(elem)
+			tasks[key]["maximum_bits_per_byte"].append(np.max(value["bits_per_byte"]))
 
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks)*0.5)))])
-	plt.suptitle("bits per byte by task + model")
-	plt.xlabel("Bits / Byte")
-	sns.violinplot(x=bits_per_byte, y=task_name, hue=model_name, density_norm="width")
-	plt.xlim([0, 3])
-	plt.savefig(filename)
-	plt.close()
+	for task, data in tqdm.tqdm(tasks.items(), desc="graph_model_comparison"):
+		max_bytes_per_token = np.percentile(data["maximum_bytes_per_token"], 90)
+		max_bits_per_byte = np.percentile(data["maximum_bits_per_byte"], 90)
 
+		plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data)))])
+		plt.suptitle(task+" bytes per token by model")
+		plt.xlabel("UTF-8 Bytes / Token")
+		sns.violinplot(x=data["bytes_per_token"], y=data["bytes_per_token_model_name"], hue=data["bytes_per_token_model_name"], density_norm="width")
+		plt.xlim([1, max_bytes_per_token])
+		plt.savefig(os.path.join(tokenization_output_prefix, task+"-dist.png"))
+		plt.close()
 
-def graph_tasks_models_tokenization_tend(comparative_data, filename):
-	task_name = []
-	model_name = []
-	bytes_per_token = []
-	maximum_bytes_per_token = []
-	tasks = set([])
+		plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data)))])
+		plt.suptitle(task+" bytes per token by model  (95% CI)")
+		plt.xlabel("UTF-8 Bytes / Token")
+		sns.barplot(x=data["bytes_per_token"], y=data["bytes_per_token_model_name"], hue=data["bytes_per_token_model_name"], estimator="median", errorbar=("ci", 95))
+		left, right = plt.xlim(left=1)
+		if right > max_bytes_per_token:
+			plt.xlim([1, max_bytes_per_token])
+		plt.savefig(os.path.join(tokenization_output_prefix, task+"-tend.png"))
+		plt.close()
 
-	for model, data in comparative_data.items():
-		for key, value in data.items():
-			if key not in tasks:
-				tasks.add(key)
-			for elem in value["bytes_per_token"]:
-				task_name.append(key)
-				model_name.append(model)
-				bytes_per_token.append(elem)
-			maximum_bytes_per_token.append(np.max(value["bytes_per_token"]))
+		plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data)))])
+		plt.suptitle(task+" bits per byte by model")
+		plt.xlabel("Bits / Byte")
+		sns.violinplot(x=data["bits_per_byte"], y=data["bits_per_byte_model_name"], hue=data["bits_per_byte_model_name"], density_norm="width")
+		plt.xlim([0, min(max_bits_per_byte, 3)])
+		plt.savefig(os.path.join(prediction_output_prefix, task+"-dist.png"))
+		plt.close()
 
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks)*0.5)))])
-	plt.suptitle("median bytes per token by task + model (95% CI)")
-	plt.xlabel("UTF-8 Bytes / Token")
-	sns.barplot(x=bytes_per_token, y=task_name, hue=model_name, estimator="median", errorbar=("ci", 95))
-	plt.xlim([1, math.ceil(np.percentile(maximum_bytes_per_token, 90))])
-	plt.savefig(filename)
-	plt.close()
-
-def graph_tasks_models_bpb_tend(comparative_data, filename):
-	task_name = []
-	model_name = []
-	bits_per_byte = []
-	tasks = set([])
-
-	for model, data in comparative_data.items():
-		for key, value in data.items():
-			if key not in tasks:
-				tasks.add(key)
-			for elem in value["bits_per_byte"]:
-				task_name.append(key)
-				model_name.append(model)
-				bits_per_byte.append(elem)
-
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks)*0.5)))])
-	plt.suptitle("median bits per byte by task + model (95% CI)")
-	plt.xlabel("Bits / Byte")
-	sns.barplot(x=bits_per_byte, y=task_name, hue=model_name, estimator="median", errorbar=("ci", 95))
-	plt.xlim([0, 3])
-	plt.savefig(filename)
-	plt.close()
+		plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data)))])
+		plt.suptitle(task+" bits per byte by model  (95% CI)")
+		plt.xlabel("Bits / Byte")
+		sns.barplot(x=data["bits_per_byte"], y=data["bits_per_byte_model_name"], hue=data["bits_per_byte_model_name"], estimator="median", errorbar=("ci", 95))
+		left, right = plt.xlim(left=0)
+		if right > 3:
+			plt.xlim([0, 3])
+		plt.savefig(os.path.join(prediction_output_prefix, task+"-tend.png"))
+		plt.close()
 
 def graph_tasks_perplexity_dist(comparative_data, model_name, filename):
 	task_name = []
@@ -537,9 +494,9 @@ def process_input_data(filename):
 			elif key == "completed_task":
 				task_name = value
 				task_metrics[value]["completed"] = True
-				if not args.skip_slow_analyses:
+				if args.run_slow_analyses:
 					graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], False)
-				task_calculated_outputs = calculate_task_data_metrics(tasks[task_name], args.skip_slow_analyses)
+				task_calculated_outputs = calculate_task_data_metrics(tasks[task_name], not args.run_slow_analyses)
 				for key, value in task_calculated_outputs[0].items():
 					task_metrics[task_name][key] = value
 				task_comparative_data[model_name][task_name] = task_calculated_outputs[1]
@@ -551,7 +508,7 @@ def process_input_data(filename):
 				if task_name not in tasks:
 					tasks[task_name] = []
 					task_positional_probs[task_name] = {}
-				line_metrics = calculate_item_metrics(value, args.skip_slow_analyses)
+				line_metrics = calculate_item_metrics(value, not args.run_slow_analyses)
 				tasks[task_name].append(line_metrics[0])
 				for i, prob in enumerate(line_metrics[1]):
 					if i not in task_positional_probs[task_name]:
@@ -570,9 +527,9 @@ def process_input_data(filename):
 			for key, value in calculate_task_throughput_metrics(task_metrics[key]).items():
 				task_metrics[task_name][key] = value
 		elif not task_metrics[key]["completed"]:
-			if not args.skip_slow_analyses:
+			if args.run_slow_analyses:
 				graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], True)
-			task_calculated_outputs = calculate_task_data_metrics(tasks[task_name], args.skip_slow_analyses)
+			task_calculated_outputs = calculate_task_data_metrics(tasks[task_name], not args.run_slow_analyses)
 			for key, value in task_calculated_outputs[0].items():
 				task_metrics[task_name][key] = value
 			task_comparative_data[model_name][task_name+"*"] = task_calculated_outputs[1]
@@ -580,12 +537,10 @@ def process_input_data(filename):
 
 	write_json(task_metrics, os.path.join(output_prefix, "metrics.json"))
 
-	if not args.skip_slow_analyses:
+	if args.run_slow_analyses:
 		graph_tasks(output_prefix, task_comparative_data[model_name], model_name)
 
 for filename in args.input_files:
 	process_input_data(filename)
-
-mpl.rcParams['figure.dpi'] = 150
 
 graph_model_comparison(args.output_dir, task_comparative_data)
