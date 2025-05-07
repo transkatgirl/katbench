@@ -41,6 +41,7 @@ os.makedirs(args.output_dir)
 def calculate_item_metrics(token_logprobs, skip_slow):
 	text = ""
 	probs = []
+	logprobs = []
 	logprob_sum = 0.0
 	token_count = 0
 	wrapped = skip_slow
@@ -52,6 +53,7 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 				token_count += 1
 				if not wrapped:
 					probs.append(math.exp(-value))
+				logprobs.append(-value)
 			elif len(probs) > 0:
 				wrapped = True
 
@@ -69,6 +71,7 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 			"byte_perplexity": np.exp(-logprob_sum / byte_count),
 			"word_perplexity": np.exp(-logprob_sum / word_count) if not skip_slow else None,
 			"token_perplexity": np.exp(-logprob_sum / token_count),
+			"token_perplexity_p95": np.exp(np.percentile(logprobs, 95)),
 			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
 		},
 		probs
@@ -174,6 +177,7 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 	output_prefix = os.path.join(output_prefix, "tasks/"+task_name)
 	os.makedirs(output_prefix)
 	graph_task_perplexity(items, task_name, os.path.join(output_prefix, "perplexity.png"))
+	graph_task_perplexity_p95(items, task_name, os.path.join(output_prefix, "perplexity-p95.png"))
 	graph_task_bpb(items, task_name, os.path.join(output_prefix, "bits-per-byte.png"))
 	graph_task_bpb_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-bits-per-byte.png"))
 	graph_task_length_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-length.png"))
@@ -453,6 +457,21 @@ def graph_task_perplexity(items, task_name, filename):
 	sns.histplot(perplexities, kde=True, log_scale=True)
 	plt.axvline(np.median(perplexities), color='.5', linestyle='--')
 	plt.xlim([1, 1000])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_task_perplexity_p95(items, task_name, filename):
+	perplexities = []
+	for item in items:
+		perplexities.append(max(item["token_perplexity_p95"], 1))
+
+	plt.figure(layout="tight")
+	plt.suptitle(task_name+" 95th percentile perplexity (n="+str(len(perplexities))+")")
+	plt.xlabel("95th Percentile Token Perplexity")
+	plt.ylabel("Dataset Items")
+	sns.histplot(perplexities, kde=True, log_scale=True)
+	plt.axvline(np.median(perplexities), color='.5', linestyle='--')
+	plt.xlim([1, 10000])
 	plt.savefig(filename)
 	plt.close()
 
