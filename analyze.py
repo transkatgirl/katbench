@@ -134,6 +134,7 @@ def calculate_task_data_metrics(items, skip_words):
 		},
 		{
 			"token_perplexity": token_perplexities,
+			"token_perplexity_p95": token_perplexities_p95,
 			"bits_per_byte": bpbs,
 			"byte_counts": byte_counts,
 			"token_counts": token_counts,
