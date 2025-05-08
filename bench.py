@@ -20,7 +20,7 @@ parser.add_argument('--context_len', type=int)
 parser.add_argument('--payload_limit', type=int, default=2000000)
 parser.add_argument('--depth_limit', type=int, default=500)
 parser.add_argument('--request_timeout', type=int, default=60*30)
-parser.add_argument('--retry_timeout', type=int, default=60*4)
+parser.add_argument('--max_retries', type=int, default=12)
 
 args = parser.parse_args()
 
@@ -60,7 +60,7 @@ async def _run_task_loop(payload_limit, depth_limit, client, prompt, truncate, d
 	else:
 		return output.details.prefill
 
-@retry(wait=wait_random_exponential(multiplier=1,max=60), stop=stop_after_attempt(10))
+@retry(wait=wait_random_exponential(multiplier=1,max=60), stop=stop_after_attempt(args.max_retries))
 async def _run_task_request(client, prompt, truncate):
 	return await client.text_generation(prompt=prompt, stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
 
