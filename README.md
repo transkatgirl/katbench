@@ -1,4 +1,5 @@
-# katbench
+# katbench (proof of concept)
+
 what i use to compare LLM base models using dataset perplexities
 
 ## setup
