@@ -195,7 +195,6 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 
 def graph_tasks(output_prefix, comparative_data, model_name):
 	graph_tasks_perplexity_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity.png"))
-	#graph_tasks_perplexity_p95_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity-p95.png"))
 	graph_tasks_tokenization_dist(comparative_data, model_name, os.path.join(output_prefix, "tokenization-dist.png"))
 	graph_tasks_tokenization_tend(comparative_data, model_name, os.path.join(output_prefix, "tokenization-tend.png"))
 	graph_tasks_bpb_dist(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-dist.png"))
@@ -379,23 +378,6 @@ def graph_tasks_perplexity_dist(comparative_data, model_name, filename):
 	plt.xlabel("Token Perplexity")
 	sns.violinplot(x=perplexity, y=task_name, density_norm="width", log_scale=True)
 	plt.xlim([1, 1000])
-	plt.savefig(filename)
-	plt.close()
-
-def graph_tasks_perplexity_p95_dist(comparative_data, model_name, filename):
-	task_name = []
-	perplexity = []
-
-	for key, value in comparative_data.items():
-		for elem in value["token_perplexity_p95"]:
-			task_name.append(key)
-			perplexity.append(elem)
-
-	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data.keys())))])
-	plt.suptitle(model_name+" 95th percentile perplexity by task")
-	plt.xlabel("95th Percentile Token Perplexity")
-	sns.violinplot(x=perplexity, y=task_name, density_norm="width", log_scale=True)
-	plt.xlim([1, 1000000])
 	plt.savefig(filename)
 	plt.close()
 
