@@ -199,8 +199,10 @@ def graph_tasks(output_prefix, comparative_data, model_name):
 
 def graph_model_comparison(output_prefix, comparative_data):
 	graph_tasks_models_bpb_dist(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-dist.png"))
+	graph_tasks_models_bpb_map(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-map.png"))
 	graph_tasks_models_bpb_tend(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-tend.png"))
 	graph_tasks_models_tokenization_dist(comparative_data, os.path.join(output_prefix, "task-tokenization-dist.png"))
+	graph_tasks_models_tokenization_map(comparative_data, os.path.join(output_prefix, "task-tokenization-map.png"))
 	graph_tasks_models_tokenization_tend(comparative_data, os.path.join(output_prefix, "task-tokenization-tend.png"))
 
 def graph_model_comparison_multi_file(output_prefix, comparative_data):
@@ -310,6 +312,66 @@ def graph_tasks_models_bpb_dist(comparative_data, filename):
 	plt.xlabel("Bits / Byte")
 	sns.violinplot(x=bits_per_byte, y=task_name, hue=model_name, density_norm="width")
 	plt.xlim([0, 3])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_models_tokenization_map(comparative_data, filename):
+	items = []
+	taskset = set([])
+	x_labels = []
+	y_labels = []
+
+	for model, data in comparative_data.items():
+		for key, value in data.items():
+			if key not in taskset:
+				taskset.add(key)
+				y_labels.append(key)
+		x_labels.append(model)
+
+	for task in y_labels:
+		task_items = []
+		for model in x_labels:
+			if task in comparative_data[model]:
+				task_items.append(np.median(comparative_data[model][task]["bytes_per_token"]))
+			else:
+				task_items.append(float('nan'))
+		items.append(task_items)
+
+	plt.figure(layout="tight", figsize=[max(6.4, (2.4+(len(x_labels)*0.5))), max(6.4, (2.4+(len(y_labels)*0.5)))])
+	#plt.suptitle("median bytes per token by task + model")
+	plt.xlabel("Model")
+	plt.ylabel("Task")
+	sns.heatmap(items, annot=True, robust=True, xticklabels=x_labels, yticklabels=y_labels)
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_models_bpb_map(comparative_data, filename):
+	items = []
+	taskset = set([])
+	x_labels = []
+	y_labels = []
+
+	for model, data in comparative_data.items():
+		for key, value in data.items():
+			if key not in taskset:
+				taskset.add(key)
+				y_labels.append(key)
+		x_labels.append(model)
+
+	for task in y_labels:
+		task_items = []
+		for model in x_labels:
+			if task in comparative_data[model]:
+				task_items.append(np.median(comparative_data[model][task]["bits_per_byte"]))
+			else:
+				task_items.append(float('nan'))
+		items.append(task_items)
+
+	plt.figure(layout="tight", figsize=[max(6.4, (2.4+(len(x_labels)*0.5))), max(6.4, (2.4+(len(y_labels)*0.5)))])
+	#plt.suptitle("median bits per byte by task + model")
+	plt.xlabel("Model")
+	plt.ylabel("Task")
+	sns.heatmap(items, annot=True, robust=True, xticklabels=x_labels, yticklabels=y_labels)
 	plt.savefig(filename)
 	plt.close()
 
