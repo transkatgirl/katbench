@@ -8,7 +8,7 @@ import datetime
 import sys
 from datasets import load_dataset
 from huggingface_hub import AsyncInferenceClient
-from tenacity import retry, wait_random_exponential, stop_after_delay
+from tenacity import retry, wait_random_exponential, stop_after_attempt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('base_url', type=str)
@@ -60,7 +60,7 @@ async def _run_task_loop(payload_limit, depth_limit, client, prompt, truncate, d
 	else:
 		return output.details.prefill
 
-@retry(wait=wait_random_exponential(multiplier=1,max=60), stop=stop_after_delay(args.retry_timeout))
+@retry(wait=wait_random_exponential(multiplier=1,max=60), stop=stop_after_attempt(10))
 async def _run_task_request(client, prompt, truncate):
 	return await client.text_generation(prompt=prompt, stream=False, details=True, decoder_input_details=True, do_sample=False, watermark=False, truncate=truncate, max_new_tokens=1)
 
