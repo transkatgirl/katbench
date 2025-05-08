@@ -75,7 +75,7 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 			"token_perplexity": np.exp(-logprob_sum / token_count),
 			"token_perplexity_p95": np.exp(logprob_p95),
 			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
-			"bits_per_byte_p95": logprob_p95 / byte_count * 1 / math.log(2),
+			"bits_per_byte_p95": (logprob_p95*token_count) / byte_count * 1 / math.log(2), # approximation
 		},
 		probs
 	)
@@ -186,6 +186,7 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 	graph_task_perplexity(items, task_name, os.path.join(output_prefix, "perplexity.png"))
 	graph_task_perplexity_p95(items, task_name, os.path.join(output_prefix, "perplexity-p95.png"))
 	graph_task_bpb(items, task_name, os.path.join(output_prefix, "bits-per-byte.png"))
+	graph_task_bpb_p95(items, task_name, os.path.join(output_prefix, "bits-per-byte-p95.png"))
 	graph_task_bpb_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-bits-per-byte.png"))
 	graph_task_length_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-length.png"))
 	graph_task_tokenization_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-tokenization.png"))
@@ -194,7 +195,7 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 
 def graph_tasks(output_prefix, comparative_data, model_name):
 	graph_tasks_perplexity_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity.png"))
-	graph_tasks_perplexity_p95_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity-p95.png"))
+	#graph_tasks_perplexity_p95_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity-p95.png"))
 	graph_tasks_tokenization_dist(comparative_data, model_name, os.path.join(output_prefix, "tokenization-dist.png"))
 	graph_tasks_tokenization_tend(comparative_data, model_name, os.path.join(output_prefix, "tokenization-tend.png"))
 	graph_tasks_bpb_dist(comparative_data, model_name, os.path.join(output_prefix, "bits-per-byte-dist.png"))
@@ -512,6 +513,21 @@ def graph_task_bpb(items, task_name, filename):
 	sns.histplot(bpbs, kde=True)
 	plt.axvline(np.median(bpbs), color='.5', linestyle='--')
 	plt.xlim([0, 3])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_task_bpb_p95(items, task_name, filename):
+	bpbs = []
+	for item in items:
+		bpbs.append(max(item["bits_per_byte_p95"], 0))
+
+	plt.figure(layout="tight")
+	plt.suptitle(task_name+" 95th percentile item bits per byte (n="+str(len(bpbs))+")")
+	plt.xlabel("95th Percentile Bits Per Byte")
+	plt.ylabel("Dataset Items")
+	sns.histplot(bpbs, kde=True)
+	plt.axvline(np.median(bpbs), color='.5', linestyle='--')
+	plt.xlim([0, 6])
 	plt.savefig(filename)
 	plt.close()
 
