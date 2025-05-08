@@ -42,6 +42,7 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 	text = ""
 	probs = []
 	logprobs = []
+	bits_per_bytes = []
 	logprob_sum = 0.0
 	token_count = 0
 	wrapped = skip_slow
@@ -53,7 +54,9 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 				token_count += 1
 				if not wrapped:
 					probs.append(math.exp(-value))
-				logprobs.append(-value)
+				if not skip_slow:
+					logprobs.append(-value)
+					bits_per_bytes.append(-value / len(key.encode("utf-8")) * 1 / math.log(2))
 			elif len(probs) > 0:
 				wrapped = True
 
@@ -63,8 +66,6 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 		word_count = max(len(nltk.tokenize.word_tokenize(text)), 1)
 	token_count = max(token_count, 1)
 
-	logprob_p95 = np.percentile(logprobs, 95)
-
 	return (
 		{
 			"byte_count": byte_count,
@@ -73,9 +74,9 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 			"byte_perplexity": np.exp(-logprob_sum / byte_count),
 			"word_perplexity": np.exp(-logprob_sum / word_count) if not skip_slow else None,
 			"token_perplexity": np.exp(-logprob_sum / token_count),
-			"token_perplexity_p95": np.exp(logprob_p95),
+			"token_perplexity_p95": np.exp(np.percentile(logprobs, 95)) if not skip_slow else None,
 			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
-			"bits_per_byte_p95": (logprob_p95*token_count) / byte_count * 1 / math.log(2), # approximation
+			"bits_per_byte_p95": np.percentile(bits_per_bytes, 95) if not skip_slow else None,
 		},
 		probs
 	)
@@ -87,7 +88,6 @@ def calculate_task_data_metrics(items, skip_words):
 	byte_perplexities = []
 	word_perplexities = []
 	token_perplexities = []
-	token_perplexities_p95 = []
 	bpbs = []
 	bytes_per_token = []
 	words_per_token = []
@@ -99,7 +99,6 @@ def calculate_task_data_metrics(items, skip_words):
 		byte_perplexities.append(item["byte_perplexity"])
 		word_perplexities.append(item["word_perplexity"])
 		token_perplexities.append(item["token_perplexity"])
-		token_perplexities_p95.append(item["token_perplexity_p95"])
 		bpbs.append(item["bits_per_byte"])
 		bytes_per_token.append(item["byte_count"] / item["token_count"])
 		if item["word_count"] and item["word_count"] > 0:
@@ -129,14 +128,12 @@ def calculate_task_data_metrics(items, skip_words):
 					"byte_perplexity": calculate_task_element_metrics(byte_perplexities),
 					"word_perplexity": calculate_task_element_metrics(word_perplexities) if not skip_words else None,
 					"token_perplexity": calculate_task_element_metrics(token_perplexities),
-					"token_perplexity_p95": calculate_task_element_metrics(token_perplexities_p95),
 					"bits_per_byte": calculate_task_element_metrics(bpbs),
 				}
 			},
 		},
 		{
 			"token_perplexity": token_perplexities,
-			"token_perplexity_p95": token_perplexities_p95,
 			"bits_per_byte": bpbs,
 			"byte_counts": byte_counts,
 			"token_counts": token_counts,
