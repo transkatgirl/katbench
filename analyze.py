@@ -337,7 +337,7 @@ def graph_tasks_models_tokenization_map(comparative_data, filename):
 				task_items.append(float('nan'))
 		items.append(task_items)
 
-	plt.figure(layout="tight", figsize=[max(6.4, (2.4+(len(x_labels)*0.5))), max(6.4, (2.4+(len(y_labels)*0.5)))])
+	plt.figure(layout="tight", figsize=[max(6.4, (3.6+(len(x_labels)*0.5))), max(6.4, (3.6+(len(y_labels)*0.5)))])
 	#plt.suptitle("median bytes per token by task + model")
 	plt.xlabel("Model")
 	plt.ylabel("Task")
@@ -367,7 +367,7 @@ def graph_tasks_models_bpb_map(comparative_data, filename):
 				task_items.append(float('nan'))
 		items.append(task_items)
 
-	plt.figure(layout="tight", figsize=[max(6.4, (2.4+(len(x_labels)*0.5))), max(6.4, (2.4+(len(y_labels)*0.5)))])
+	plt.figure(layout="tight", figsize=[max(6.4, (3.6+(len(x_labels)*0.5))), max(6.4, (2.4+(len(y_labels)*0.5)))])
 	#plt.suptitle("median bits per byte by task + model")
 	plt.xlabel("Model")
 	plt.ylabel("Task")
