@@ -85,11 +85,6 @@
 		"subsets": [],
 		"split": "train"
 	},
-	"scraped-nsfw-story": {
-		"hf_repo": "bluuwhale/scrappednsfwstory",
-		"subsets": [],
-		"split": "train[:2500]"
-	},
 	"gutenberg_english": {
 		"hf_repo": "sedthh/gutenberg_english",
 		"subsets": [],
