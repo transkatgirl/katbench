@@ -66,6 +66,9 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 		word_count = max(len(nltk.tokenize.word_tokenize(text)), 1)
 	token_count = max(token_count, 1)
 
+	if len(logprobs) == 0:
+		skip_slow = True
+
 	return (
 		{
 			"byte_count": byte_count,

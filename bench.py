@@ -10,6 +10,8 @@ from datasets import load_dataset
 from huggingface_hub import AsyncInferenceClient
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
+# TODO: switch inference backend from TGI to vLLM, implement saving vLLM prompt_logprobs
+
 parser = argparse.ArgumentParser()
 parser.add_argument('base_url', type=str)
 parser.add_argument('--api_key', type=str)
