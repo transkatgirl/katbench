@@ -229,9 +229,10 @@ def graph_model_comparison_multi_file(output_prefix, comparative_data):
 	os.makedirs(tokenization_output_prefix)
 
 	for model, data in comparative_data.items():
+		normalization_value = calculate_model_normalization_value(data, args.normalize_to)
 		for key, value in data.items():
 			if key not in tasks:
-				tasks[key] = {"bytes_per_token_model_name": [], "bits_per_byte_model_name": [], "maximum_bytes_per_token": [], "maximum_bits_per_byte": [], "bytes_per_token": [], "bits_per_byte": []}
+				tasks[key] = {"bytes_per_token_model_name": [], "bits_per_byte_model_name": [], "maximum_bytes_per_token": [], "maximum_bits_per_byte": [], "bytes_per_token": [], "bits_per_byte": [], "normalized_bits_per_byte": []}
 			for elem in value["bytes_per_token"]:
 				tasks[key]["bytes_per_token_model_name"].append(model)
 				tasks[key]["bytes_per_token"].append(elem)
@@ -239,6 +240,8 @@ def graph_model_comparison_multi_file(output_prefix, comparative_data):
 			for elem in value["bits_per_byte"]:
 				tasks[key]["bits_per_byte_model_name"].append(model)
 				tasks[key]["bits_per_byte"].append(elem)
+				if normalization_value:
+					tasks[key]["normalized_bits_per_byte"].append(elem / normalization_value)
 			tasks[key]["maximum_bits_per_byte"].append(np.max(value["bits_per_byte"]))
 
 	for task, data in tasks.items():
@@ -254,7 +257,7 @@ def graph_model_comparison_multi_file(output_prefix, comparative_data):
 		plt.close()
 
 		plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data)))])
-		plt.suptitle(task+" bytes per token by model  (95% CI)")
+		plt.suptitle(task+" bytes per token by model (95% CI)")
 		plt.xlabel("UTF-8 Bytes / Token")
 		sns.barplot(x=data["bytes_per_token"], y=data["bytes_per_token_model_name"], estimator="median", errorbar=("ci", 95))
 		left, right = plt.xlim(left=1)
@@ -272,13 +275,20 @@ def graph_model_comparison_multi_file(output_prefix, comparative_data):
 		plt.close()
 
 		plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data)))])
-		plt.suptitle(task+" bits per byte by model  (95% CI)")
+		plt.suptitle(task+" bits per byte by model (95% CI)")
 		plt.xlabel("Bits / Byte")
 		sns.barplot(x=data["bits_per_byte"], y=data["bits_per_byte_model_name"], estimator="median", errorbar=("ci", 95))
 		left, right = plt.xlim(left=0)
 		if right > 3:
 			plt.xlim([0, 3])
 		plt.savefig(os.path.join(prediction_output_prefix, task+"-tend.png"))
+		plt.close()
+
+		plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+len(comparative_data)))])
+		plt.suptitle(task+" bits per byte by model, normalized to "+args.normalize_to+" (95% CI)")
+		plt.xlabel("Bits / Byte")
+		sns.barplot(x=data["normalized_bits_per_byte"], y=data["bits_per_byte_model_name"], estimator="median", errorbar=("ci", 95))
+		plt.savefig(os.path.join(prediction_output_prefix, task+"-normalized-tend.png"))
 		plt.close()
 
 def graph_tasks_models_tokenization_dist(comparative_data, filename):
@@ -385,7 +395,7 @@ def graph_tasks_models_bpb_map(comparative_data, filename):
 	#plt.suptitle("median bits per byte by task + model")
 	plt.xlabel("Model")
 	plt.ylabel("Task")
-	sns.heatmap(items, annot=True, robust=True, xticklabels=x_labels, yticklabels=y_labels)
+	sns.heatmap(items, annot=True, robust=True, xticklabels=x_labels, yticklabels=y_labels, fmt='.2f')
 	plt.savefig(filename)
 	plt.close()
 
