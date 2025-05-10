@@ -365,7 +365,7 @@ def graph_tasks_models_tokenization_map(comparative_data, filename):
 	#plt.suptitle("median bytes per token by task + model")
 	plt.xlabel("Model")
 	plt.ylabel("Task")
-	sns.heatmap(items, annot=True, robust=True, xticklabels=x_labels, yticklabels=y_labels, fmt='.2f')
+	sns.heatmap(items, annot=True, robust=True, xticklabels=x_labels, yticklabels=y_labels, fmt='.2g')
 	plt.savefig(filename)
 	plt.close()
 
