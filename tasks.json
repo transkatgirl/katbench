@@ -1,4 +1,9 @@
 {
+	"dclm-baseline-1.0": {
+		"hf_repo": "kothasuhas/dclm-baseline-1.0_subset_1M",
+		"subsets": [],
+		"split": "train[:15000]"
+	},
 	"pile": {
 		"hf_repo": "lighteval/pile_helm",
 		"subsets": [
