@@ -66,9 +66,6 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 		word_count = max(len(nltk.tokenize.word_tokenize(text)), 1)
 	token_count = max(token_count, 1)
 
-	if len(logprobs) == 0:
-		skip_slow = True
-
 	return (
 		{
 			"byte_count": byte_count,
@@ -756,9 +753,11 @@ def process_input_data(filename):
 					tasks[task_name] = []
 					task_positional_probs[task_name] = {}
 					task_positional_logprobs[task_name] = []
+				if not value:
+					continue
 				line_metrics = calculate_item_metrics(value, not args.run_slow_analyses)
 				tasks[task_name].append(line_metrics[0])
-				if args.run_slow_analyses and line_metrics[1]:
+				if args.run_slow_analyses:
 					task_positional_logprobs[task_name].append(line_metrics[2])
 					for i, prob in enumerate(line_metrics[1]):
 						if i not in task_positional_probs[task_name]:
