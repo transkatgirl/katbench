@@ -193,6 +193,7 @@ def graph_task(output_prefix, task_name, items, prob_items, logprob_items, incom
 	graph_task_tokenization_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-tokenization.png"))
 	graph_task_positional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-positional.png"))
 	graph_task_distributional_perplexity(logprob_items, task_name, os.path.join(output_prefix, "perplexity-distributional.png"))
+	graph_task_cumulative_perplexity(logprob_items, task_name, os.path.join(output_prefix, "perplexity-cumulative.png"))
 
 def graph_tasks(output_prefix, comparative_data, model_name):
 	graph_tasks_perplexity_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity.png"))
@@ -656,6 +657,23 @@ def graph_task_distributional_perplexity(positional_logprobs, task_name, filenam
 	sns.histplot(probs, stat="proportion", log_scale=True)
 	plt.loglog()
 	plt.ylim(top=0.5, bottom=0.0001)
+	plt.xlim([1, 10000])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_task_cumulative_perplexity(positional_logprobs, task_name, filename):
+	probs = []
+
+	for item in positional_logprobs:
+		for prob in item:
+			probs.append(math.exp(prob))
+
+	plt.figure(layout="tight", figsize=[11.2, 4.8])
+	plt.suptitle(task_name+" token perplexity cumulative distribution (n="+str(len(positional_logprobs))+" items)")
+	plt.xlabel("Token Perplexity")
+	sns.ecdfplot(probs, stat="proportion", log_scale=True, complementary=True)
+	plt.loglog()
+	plt.ylim(top=1, bottom=0.001)
 	plt.xlim([1, 10000])
 	plt.savefig(filename)
 	plt.close()
