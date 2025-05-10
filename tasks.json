@@ -106,6 +106,36 @@
 		"subsets": [],
 		"split": "train"
 	},
+	"imsdb-movie-scripts:action": {
+		"hf_repo": "aneeshas/imsdb-genre-movie-scripts",
+		"subsets": [],
+		"split": "train[:100]",
+		"field": "Action"
+	},
+	"imsdb-movie-scripts:horror": {
+		"hf_repo": "aneeshas/imsdb-genre-movie-scripts",
+		"subsets": [],
+		"split": "train[:100]",
+		"field": "Horror"
+	},
+	"imsdb-movie-scripts:sci-fi": {
+		"hf_repo": "aneeshas/imsdb-genre-movie-scripts",
+		"subsets": [],
+		"split": "train[:100]",
+		"field": "Sci-Fi"
+	},
+	"imsdb-movie-scripts:comedy": {
+		"hf_repo": "aneeshas/imsdb-genre-movie-scripts",
+		"subsets": [],
+		"split": "train[:100]",
+		"field": "Comedy"
+	},
+	"imsdb-movie-scripts:drama": {
+		"hf_repo": "aneeshas/imsdb-genre-movie-scripts",
+		"subsets": [],
+		"split": "train[:100]",
+		"field": "Drama"
+	},
 	"tinystories": {
 		"hf_repo": "roneneldan/TinyStories",
 		"subsets": [],
