@@ -67,6 +67,9 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 		word_count = max(len(nltk.tokenize.word_tokenize(text)), 1)
 	token_count = max(token_count, 1)
 
+	if len(probs) < 1:
+		skip_slow = True
+
 	return (
 		{
 			"byte_count": byte_count,
@@ -170,6 +173,12 @@ def calculate_task_throughput_metrics(task_metrics):
 		}
 	}
 
+def calculate_model_normalization_value(comparative_data, normalization_task):
+	if normalization_task not in comparative_data:
+		return None
+
+	return np.median(comparative_data[normalization_task]["bits_per_byte"])
+
 def write_json(data, path):
 	if os.path.exists(path):
 		os.remove(path)
@@ -204,6 +213,8 @@ def graph_model_comparison(output_prefix, comparative_data):
 	graph_tasks_models_bpb_dist(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-dist.png"))
 	graph_tasks_models_bpb_map(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-map.png"))
 	graph_tasks_models_bpb_tend(comparative_data, os.path.join(output_prefix, "task-bits-per-byte-tend.png"))
+	graph_tasks_models_normalized_bpb_map(comparative_data, args.normalize_to, os.path.join(output_prefix, "task-normalized-bits-per-byte-map.png"))
+	graph_tasks_models_normalized_bpb_tend(comparative_data, args.normalize_to, os.path.join(output_prefix, "task-normalized-bits-per-byte-tend.png"))
 	graph_tasks_models_tokenization_dist(comparative_data, os.path.join(output_prefix, "task-tokenization-dist.png"))
 	graph_tasks_models_tokenization_map(comparative_data, os.path.join(output_prefix, "task-tokenization-map.png"))
 	graph_tasks_models_tokenization_tend(comparative_data, os.path.join(output_prefix, "task-tokenization-tend.png"))
@@ -378,6 +389,45 @@ def graph_tasks_models_bpb_map(comparative_data, filename):
 	plt.savefig(filename)
 	plt.close()
 
+def graph_tasks_models_normalized_bpb_map(comparative_data, normalization_task, filename):
+	items = []
+	taskset = set([])
+	x_labels = []
+	y_labels = []
+
+	normalization_values = {}
+
+	for model, data in comparative_data.items():
+		normalization_value = calculate_model_normalization_value(data, normalization_task)
+		if not normalization_value:
+			continue
+		normalization_values[model] = normalization_value
+		for key, value in data.items():
+			if key not in taskset:
+				taskset.add(key)
+				y_labels.append(key)
+		x_labels.append(model)
+
+	for task in y_labels:
+		task_items = []
+		for model in x_labels:
+			if task in comparative_data[model]:
+				elements = []
+				for elem in comparative_data[model][task]["bits_per_byte"]:
+					elements.append(elem / normalization_values[model])
+				task_items.append(np.median(elements))
+			else:
+				task_items.append(float('nan'))
+		items.append(task_items)
+
+	plt.figure(layout="tight", figsize=[max(6.4, (3.6+(len(x_labels)*0.5))), max(6.4, (2.4+(len(y_labels)*0.5)))])
+	#plt.suptitle("median bits per byte by task + model, normalized to "+normalization_task)
+	plt.xlabel("Model")
+	plt.ylabel("Task")
+	sns.heatmap(items, annot=True, robust=True, xticklabels=x_labels, yticklabels=y_labels, fmt='.2f')
+	plt.savefig(filename)
+	plt.close()
+
 def graph_tasks_models_tokenization_tend(comparative_data, filename):
 	task_name = []
 	model_name = []
@@ -423,6 +473,32 @@ def graph_tasks_models_bpb_tend(comparative_data, filename):
 	plt.xlabel("Bits / Byte")
 	sns.barplot(x=bits_per_byte, y=task_name, hue=model_name, estimator="median", errorbar=("ci", 95))
 	plt.xlim([0, 3])
+	plt.savefig(filename)
+	plt.close()
+
+def graph_tasks_models_normalized_bpb_tend(comparative_data, normalization_task, filename):
+	task_name = []
+	model_name = []
+	bits_per_byte = []
+	tasks = set([])
+
+	for model, data in comparative_data.items():
+		normalization_value = calculate_model_normalization_value(data, normalization_task)
+		if not normalization_value:
+			continue
+		for key, value in data.items():
+			if key not in tasks:
+				tasks.add(key)
+			for elem in value["bits_per_byte"]:
+				task_name.append(key)
+				model_name.append(model)
+				bits_per_byte.append(elem / normalization_value)
+
+	plt.figure(layout="constrained", figsize=[8.8, max(6.4, (2.4+(len(comparative_data.keys())*len(tasks)*0.5)))])
+	plt.suptitle("median bits per byte by task + model, normalized to "+normalization_task+" (95% CI)")
+	plt.xlabel("Bits / Byte Multiplier")
+	sns.barplot(x=bits_per_byte, y=task_name, hue=model_name, estimator="median", errorbar=("ci", 95))
+	plt.xlim([0, 2])
 	plt.savefig(filename)
 	plt.close()
 
