@@ -56,7 +56,7 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 					probs.append(math.exp(-value))
 				if not skip_slow:
 					logprobs.append(-value)
-					bits_per_bytes.append(-value / len(key.encode("utf-8")) * 1 / math.log(2))
+					bits_per_bytes.append(-value / max(len(key.encode("utf-8")), 1) * 1 / math.log(2))
 			elif len(probs) > 0:
 				wrapped = True
 
