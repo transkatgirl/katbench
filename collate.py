@@ -34,6 +34,8 @@ for filename in args.input_files:
 
 	input_file.close()
 
+print("model =", metadata["endpoint_info"]["model_id"])
+
 print("open_output_file", args.output_file)
 output_file = open(args.output_file, "x")
 output_file.write(json.dumps(metadata, separators=(',', ':')))
@@ -97,7 +99,7 @@ output_file.flush()
 os.fsync(output_file)
 output_file.close()
 
-print("collated tasks = ", global_collated_task_list)
+print("collated tasks =", global_collated_task_list)
 
 incomplete_task_list = []
 
@@ -105,4 +107,4 @@ for key, value in metadata["tasks"].items():
 	if key not in global_completed_tasks:
 		incomplete_task_list.append(key)
 
-print("incomplete tasks = ", incomplete_task_list)
+print("incomplete tasks =", incomplete_task_list)
