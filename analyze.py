@@ -753,7 +753,7 @@ def process_input_data(filename):
 					tasks[task_name] = []
 					task_positional_probs[task_name] = {}
 					task_positional_logprobs[task_name] = []
-				if not value:
+				if not value or len(value) == 0:
 					continue
 				line_metrics = calculate_item_metrics(value, not args.run_slow_analyses)
 				tasks[task_name].append(line_metrics[0])
