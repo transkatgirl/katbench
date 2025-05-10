@@ -26,6 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('input_files', nargs="+", type=str)
 parser.add_argument('--output_dir', type=str, default="analysis-" + str(round(time.time())) + "/")
 parser.add_argument('--run_slow_analyses', action='store_true')
+parser.add_argument('--normalize_to', type=str, default="pile:commoncrawl")
 
 args = parser.parse_args()
 
@@ -753,7 +754,7 @@ def process_input_data(filename):
 					tasks[task_name] = []
 					task_positional_probs[task_name] = {}
 					task_positional_logprobs[task_name] = []
-				if not value or len(value) == 0:
+				if not value or len(value) <= 1:
 					continue
 				line_metrics = calculate_item_metrics(value, not args.run_slow_analyses)
 				tasks[task_name].append(line_metrics[0])
