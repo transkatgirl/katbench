@@ -844,7 +844,7 @@ def process_input_data(filename):
 					continue
 				line_metrics = calculate_item_metrics(value, not args.run_slow_analyses)
 				tasks[task_name].append(line_metrics[0])
-				if args.run_slow_analyses:
+				if args.run_slow_analyses and line_metrics[1]:
 					task_positional_logprobs[task_name].append(line_metrics[2])
 					for i, prob in enumerate(line_metrics[1]):
 						if i not in task_positional_probs[task_name]:
