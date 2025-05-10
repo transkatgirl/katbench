@@ -96,6 +96,11 @@
 		"subsets": [],
 		"split": "test[:500]"
 	},
+	"hillary-emails": {
+		"hf_repo": "from-our-page/hillary-clinton-emails-wikileaks-jsonl",
+		"subsets": [],
+		"split": "train"
+	},
 	"tinystories": {
 		"hf_repo": "roneneldan/TinyStories",
 		"subsets": [],
