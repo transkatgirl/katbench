@@ -674,7 +674,7 @@ def graph_task_cumulative_perplexity(positional_logprobs, task_name, filename):
 	sns.ecdfplot(probs, stat="proportion", log_scale=True, complementary=True)
 	plt.loglog()
 	plt.ylim(top=1, bottom=0.001)
-	plt.xlim([1, 10000])
+	plt.xlim([1, 100000])
 	plt.savefig(filename)
 	plt.close()
 
