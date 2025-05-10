@@ -81,7 +81,8 @@ def calculate_item_metrics(token_logprobs, skip_slow):
 			"bits_per_byte": -logprob_sum / byte_count * 1 / math.log(2),
 			"bits_per_byte_p95": np.percentile(bits_per_bytes, 95) if not skip_slow else None,
 		},
-		probs
+		probs if not skip_slow else None,
+		logprobs if not skip_slow else None
 	)
 
 def calculate_task_data_metrics(items, skip_words):
@@ -178,7 +179,7 @@ def write_json(data, path):
 	json.dump(data, output_file, indent="\t")
 	output_file.close()
 
-def graph_task(output_prefix, task_name, items, prob_items, incomplete):
+def graph_task(output_prefix, task_name, items, prob_items, logprob_items, incomplete):
 	if incomplete:
 		task_name += "~incomplete"
 	output_prefix = os.path.join(output_prefix, "tasks/"+task_name)
@@ -191,7 +192,7 @@ def graph_task(output_prefix, task_name, items, prob_items, incomplete):
 	graph_task_length_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-length.png"))
 	graph_task_tokenization_perplexity(items, task_name, os.path.join(output_prefix, "perplexity-tokenization.png"))
 	graph_task_positional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-positional.png"))
-	graph_task_distributional_perplexity(prob_items, task_name, os.path.join(output_prefix, "perplexity-distributional.png"))
+	graph_task_distributional_perplexity(logprob_items, task_name, os.path.join(output_prefix, "perplexity-distributional.png"))
 
 def graph_tasks(output_prefix, comparative_data, model_name):
 	graph_tasks_perplexity_dist(comparative_data, model_name, os.path.join(output_prefix, "perplexity.png"))
@@ -642,18 +643,15 @@ def graph_task_tokenization_perplexity(items, task_name, filename):
 	g.savefig(filename)
 	plt.close()
 
-def graph_task_distributional_perplexity(positional_probs, task_name, filename):
-	positional_probs=list(positional_probs.values())
-
+def graph_task_distributional_perplexity(positional_logprobs, task_name, filename):
 	probs = []
-	for pos, prob_set in enumerate(positional_probs, start=1):
-		for prob in prob_set:
-			probs.append(prob)
 
-	items = len(positional_probs)
+	for item in positional_logprobs:
+		for prob in item:
+			probs.append(math.exp(prob))
 
 	plt.figure(layout="tight", figsize=[11.2, 4.8])
-	plt.suptitle(task_name+" token perplexity distribution (first "+str(items)+" tokens per item, n="+str(len(positional_probs[0]))+" items)")
+	plt.suptitle(task_name+" token perplexity distribution (n="+str(len(positional_logprobs))+" items)")
 	plt.xlabel("Token Perplexity")
 	sns.histplot(probs, stat="proportion", log_scale=True)
 	plt.loglog()
@@ -699,6 +697,7 @@ def process_input_data(filename):
 	task_metrics = {}
 	tasks = {}
 	task_positional_probs = {}
+	task_positional_logprobs = {}
 	output_prefix = ""
 	model_name = ""
 
@@ -723,12 +722,13 @@ def process_input_data(filename):
 				task_name = value
 				task_metrics[value]["completed"] = True
 				if args.run_slow_analyses:
-					graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], False)
+					graph_task(output_prefix, task_name, tasks[task_name], task_positional_probs[task_name], task_positional_logprobs[task_name], False)
 				task_calculated_outputs = calculate_task_data_metrics(tasks[task_name], not args.run_slow_analyses)
 				for key, value in task_calculated_outputs[0].items():
 					task_metrics[task_name][key] = value
 				task_comparative_data[model_name][task_name] = task_calculated_outputs[1]
 				task_positional_probs[task_name] = {}
+				task_positional_logprobs[task_name] = []
 			elif task_name:
 				task_metrics[task_name][key] = value
 			elif isinstance(value, list):
@@ -736,12 +736,15 @@ def process_input_data(filename):
 				if task_name not in tasks:
 					tasks[task_name] = []
 					task_positional_probs[task_name] = {}
+					task_positional_logprobs[task_name] = []
 				line_metrics = calculate_item_metrics(value, not args.run_slow_analyses)
 				tasks[task_name].append(line_metrics[0])
-				for i, prob in enumerate(line_metrics[1]):
-					if i not in task_positional_probs[task_name]:
-						task_positional_probs[task_name][i] = []
-					task_positional_probs[task_name][i].append(prob)
+				if args.run_slow_analyses:
+					task_positional_logprobs[task_name].append(line_metrics[2])
+					for i, prob in enumerate(line_metrics[1]):
+						if i not in task_positional_probs[task_name]:
+							task_positional_probs[task_name][i] = []
+						task_positional_probs[task_name][i].append(prob)
 
 	input_file.close()
 
