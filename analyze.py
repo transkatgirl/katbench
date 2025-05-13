@@ -17,6 +17,8 @@ import seaborn as sns
 
 # TODO: borrow ideas from https://github.com/ggml-org/llama.cpp/tree/master/tools/perplexity
 
+# maybe make a custom metric based on token perplexity distribution?
+
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
 nltk_downloader = nltk.downloader.Downloader()
