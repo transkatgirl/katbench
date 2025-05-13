@@ -15,6 +15,8 @@ import seaborn as sns
 # TODO: Multithreading, CSV output, performance optimization, code cleanup
 # TODO: make model colors consistent between task comparison graphs
 
+# TODO: borrow ideas from https://github.com/ggml-org/llama.cpp/tree/master/tools/perplexity
+
 sns.set_theme()
 mpl.rcParams['figure.dpi'] = 300
 nltk_downloader = nltk.downloader.Downloader()
@@ -735,6 +737,8 @@ def graph_task_distributional_perplexity(positional_logprobs, task_name, filenam
 		for prob in item:
 			probs.append(math.exp(prob))
 
+	percentiles = np.percentile(probs, [50, 90, 95, 99, 99.9])
+
 	plt.figure(layout="tight", figsize=[11.2, 4.8])
 	plt.suptitle(task_name+" token perplexity distribution (n="+str(len(positional_logprobs))+" items)")
 	plt.xlabel("Token Perplexity")
@@ -742,6 +746,11 @@ def graph_task_distributional_perplexity(positional_logprobs, task_name, filenam
 	plt.loglog()
 	plt.ylim(top=0.5, bottom=0.0001)
 	plt.xlim([1, 10000])
+	plt.axvline(percentiles[0], color='.5', linestyle='--')
+	plt.axvline(percentiles[1], color='.5', linestyle='--')
+	plt.axvline(percentiles[2], color='.5', linestyle='--')
+	plt.axvline(percentiles[3], color='.5', linestyle='--')
+	plt.axvline(percentiles[4], color='.5', linestyle='--')
 	plt.savefig(filename)
 	plt.close()
 
