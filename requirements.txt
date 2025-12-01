@@ -12,7 +12,7 @@ datasets==3.5.1
 DateTime==5.5
 dill==0.3.8
 filelock==3.18.0
-fonttools==4.57.0
+fonttools==4.61.0
 frozenlist==1.6.0
 fsspec==2025.3.0
 hf-xet==1.1.0
