@@ -11,7 +11,7 @@ cycler==0.12.1
 datasets==3.5.1
 DateTime==5.5
 dill==0.3.8
-filelock==3.18.0
+filelock==3.20.3
 fonttools==4.57.0
 frozenlist==1.6.0
 fsspec==2025.3.0
